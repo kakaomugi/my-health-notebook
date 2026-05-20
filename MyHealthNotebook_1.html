@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>My Health Notebook</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --green:#1D9E75;--green-dark:#0F6E56;--green-light:#E1F5EE;--green-text:#085041;
+  --amber:#EF9F27;--amber-light:#FAEEDA;--amber-text:#854F0B;
+  --red:#E24B4A;--red-light:#FCEBEB;--red-text:#A32D2D;
+  --blue:#378ADD;--blue-light:#E6F1FB;--blue-text:#185FA5;
+  --gray:#888780;--gray-light:#F1EFE8;
+  --bg:#F7F6F2;--surface:#FFFFFF;--border:rgba(0,0,0,0.1);
+  --text:#1a1a18;--text2:#666660;--text3:#999992;
+  --radius:12px;--radius-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+.app{display:flex;flex-direction:column;height:100vh;max-width:430px;margin:0 auto;background:var(--bg);position:relative}
+
+/* Header */
+.header{background:var(--surface);border-bottom:0.5px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:10}
+.app-brand{display:flex;flex-direction:column}
+.app-name{font-size:15px;font-weight:600;color:var(--text);letter-spacing:-0.01em}
+.app-name span{color:var(--green)}
+.app-date{font-size:11px;color:var(--text2);margin-top:1px}
+.header-actions{display:flex;gap:6px}
+.icon-btn{background:none;border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12px;color:var(--text);display:flex;align-items:center;gap:4px}
+.icon-btn:hover{background:var(--gray-light)}
+.icon-btn.danger{color:var(--red-text);border-color:rgba(226,75,74,0.3)}
+
+/* Nav */
+.nav{display:flex;background:var(--surface);border-bottom:0.5px solid var(--border);flex-shrink:0}
+.nav-btn{flex:1;padding:8px 2px 6px;border:none;background:none;cursor:pointer;font-size:10px;color:var(--text2);display:flex;flex-direction:column;align-items:center;gap:2px;border-bottom:2px solid transparent;transition:all 0.15s}
+.nav-btn i{font-size:18px}
+.nav-btn.active{color:var(--green);border-bottom-color:var(--green)}
+
+/* Screens */
+.screens{flex:1;overflow:hidden;position:relative}
+.screen{display:none;height:100%;overflow-y:auto;padding:12px;-webkit-overflow-scrolling:touch}
+.screen.active{display:block}
+
+/* Cards */
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.card-title{font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
+.badge-green{background:var(--green-light);color:var(--green-dark)}
+.badge-amber{background:var(--amber-light);color:var(--amber-text)}
+.badge-red{background:var(--red-light);color:var(--red-text)}
+.badge-blue{background:var(--blue-light);color:var(--blue-text)}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
+.stat-card{background:var(--surface);border-radius:var(--radius-sm);padding:10px;border:0.5px solid var(--border)}
+.stat-label{font-size:11px;color:var(--text2);margin-bottom:3px}
+.stat-value{font-size:22px;font-weight:600;color:var(--text)}
+.stat-unit{font-size:11px;color:var(--text2)}
+.progress-bar{background:var(--gray-light);border-radius:4px;height:5px;margin-top:5px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;background:var(--green);transition:width 0.4s}
+
+/* Medication */
+.med-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border)}
+.med-row:last-child{border-bottom:none}
+.check-circle{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;background:var(--surface)}
+.check-circle.done{background:var(--green);border-color:var(--green);color:white}
+.med-info{flex:1;min-width:0}
+.med-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.med-sub{font-size:11px;color:var(--text2)}
+
+/* Buttons */
+.btn{width:100%;padding:10px 14px;border-radius:var(--radius-sm);border:0.5px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px;color:var(--text);margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:6px;transition:background 0.15s;font-family:inherit}
+.btn:hover{background:var(--gray-light)}
+.btn-primary{background:var(--green);color:white;border-color:var(--green)}
+.btn-primary:hover{background:var(--green-dark)}
+.btn-sm{width:auto;padding:5px 12px;font-size:12px;margin-bottom:0}
+.btn-row{display:flex;gap:8px}
+.btn-row .btn{margin-bottom:0}
+
+/* Forms */
+input,select,textarea{width:100%;border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;font-size:14px;background:var(--surface);color:var(--text);margin-bottom:8px;font-family:inherit;appearance:none;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
+textarea{min-height:60px;resize:vertical}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23999' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+
+.section-label{font-size:11px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin:14px 0 6px}
+
+/* Tags */
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.tag{padding:4px 10px;border-radius:20px;border:0.5px solid var(--border);font-size:12px;cursor:pointer;background:var(--surface);color:var(--text);transition:all 0.15s}
+.tag.on{background:var(--green-light);color:var(--green-dark);border-color:var(--green)}
+
+/* Calendar */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-month{font-size:15px;font-weight:600}
+.cal-nav-btn{background:none;border:none;cursor:pointer;color:var(--text);font-size:20px;padding:4px 8px;border-radius:6px}
+.cal-nav-btn:hover{background:var(--gray-light)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.cal-head{text-align:center;font-size:11px;color:var(--text2);padding:4px 0}
+.cal-cell{min-height:44px;display:flex;flex-direction:column;align-items:center;padding:3px 1px;cursor:pointer;border-radius:6px;gap:1px}
+.cal-cell:hover{background:var(--gray-light)}
+.cal-num{font-size:12px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.cal-cell.today .cal-num{background:var(--green);color:white;font-weight:600}
+.cal-cell.sel:not(.today) .cal-num{background:var(--green-light);color:var(--green-dark)}
+.cal-cell.dim{color:var(--text3)}
+.cal-bp{font-size:8px;font-weight:500;padding:1px 3px;border-radius:3px;line-height:1.3;white-space:nowrap}
+.cal-dots{display:flex;gap:2px;justify-content:center}
+.cal-dot{width:4px;height:4px;border-radius:50%}
+.event-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--border)}
+.event-item:last-child{border-bottom:none}
+.event-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.event-label{flex:1;font-size:13px}
+.event-time{font-size:11px;color:var(--text2)}
+
+/* Blood Pressure */
+.bp-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--border)}
+.bp-row:last-child{border-bottom:none}
+.bp-date{font-size:12px;color:var(--text2);min-width:58px}
+.bp-val{flex:1;font-size:14px;font-weight:500}
+.bp-cat{flex-shrink:0}
+.bp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.bp-ref{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:2px}
+.bp-ref-item{border-radius:8px;padding:8px;font-size:12px}
+
+/* Receipts */
+.rec-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border)}
+.rec-item:last-child{border-bottom:none}
+.rec-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+.rec-icon.h{background:var(--blue-light);color:var(--blue-text)}
+.rec-icon.p{background:var(--green-light);color:var(--green-dark)}
+.rec-info{flex:1;min-width:0}
+.rec-name{font-size:13px;font-weight:500}
+.rec-date{font-size:11px;color:var(--text2)}
+.rec-amt{font-size:13px;font-weight:500}
+
+/* Photos */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.photo-cell{aspect-ratio:1;border-radius:8px;border:0.5px solid var(--border);overflow:hidden;position:relative;cursor:pointer;background:var(--gray-light);display:flex;align-items:center;justify-content:center}
+.photo-cell img{width:100%;height:100%;object-fit:cover}
+.photo-cell.add-btn{border-style:dashed;color:var(--text2);font-size:26px}
+.photo-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:white;font-size:9px;padding:2px 4px;text-align:center}
+
+/* Lab Scanner */
+.canvas-wrap{position:relative;background:#000;border-radius:8px;overflow:hidden;margin-bottom:8px;touch-action:none}
+canvas#editCanvas{display:block;width:100%;cursor:crosshair}
+.toolbar{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center}
+.tool-btn{padding:5px 10px;border-radius:6px;border:0.5px solid var(--border);background:var(--surface);cursor:pointer;font-size:12px;color:var(--text);font-family:inherit}
+.tool-btn.on{background:#2C2C2A;color:white;border-color:#2C2C2A}
+.lab-item{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:0.5px solid var(--border)}
+.lab-item:last-child{border-bottom:none}
+.lab-name{flex:1;font-size:13px}
+.lab-val{font-size:13px;font-weight:500;text-align:right;min-width:80px}
+.lab-ref{font-size:11px;color:var(--text2);min-width:60px;text-align:right}
+.spinner{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Info boxes */
+.info-box{border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:10px;font-size:13px;display:flex;gap:8px;align-items:flex-start;line-height:1.5}
+.info-box i{font-size:16px;flex-shrink:0;margin-top:1px}
+.info-amber{background:var(--amber-light);color:var(--amber-text)}
+.info-green{background:var(--green-light);color:var(--green-dark)}
+.info-blue{background:var(--blue-light);color:var(--blue-text)}
+.info-red{background:var(--red-light);color:var(--red-text)}
+
+/* Settings */
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--border)}
+.set-row:last-child{border-bottom:none}
+.set-label{font-size:14px}
+.set-sub{font-size:11px;color:var(--text2)}
+
+/* Lock / Setup screens */
+.full-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;z-index:100}
+.lock-icon{width:68px;height:68px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.lock-icon i{font-size:30px;color:var(--green)}
+.lock-title{font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.02em}
+.lock-sub{font-size:13px;color:var(--text2);margin-bottom:24px;text-align:center}
+.pw-wrap{position:relative;width:100%;max-width:290px;margin-bottom:8px}
+.pw-wrap input{width:100%;padding:12px 42px 12px 14px;font-size:16px;border-radius:var(--radius-sm);border:0.5px solid var(--border);background:var(--surface);color:var(--text);margin-bottom:0}
+.eye-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);font-size:18px;padding:2px}
+.pw-strength{display:flex;gap:4px;margin:4px 0 6px}
+.pw-strength span{flex:1;height:4px;border-radius:2px;background:var(--gray-light);transition:background 0.2s}
+.err-msg{color:var(--red-text);font-size:12px;min-height:18px;text-align:center;margin-bottom:8px}
+.rule{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);padding:2px 0}
+.rule i{font-size:14px}
+.rule.ok{color:var(--green)}
+.lockout-box{background:var(--red-light);border:0.5px solid rgba(226,75,74,0.4);border-radius:var(--radius-sm);padding:14px;text-align:center;width:100%;max-width:290px;margin-bottom:14px}
+.lockout-title{color:var(--red-text);font-weight:600;margin-bottom:4px}
+.lockout-cd{font-size:24px;font-weight:700;color:var(--red-text);margin:6px 0}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:50;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:16px 16px 0 0;padding:16px;width:100%;max-height:82vh;overflow-y:auto;max-width:430px;margin:0 auto}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.modal-title{font-size:15px;font-weight:600}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--text2);font-size:22px;padding:0}
+
+/* Step indicator */
+.step-list .step{display:flex;gap:10px;padding:7px 0;border-bottom:0.5px solid var(--border);align-items:flex-start}
+.step:last-child{border-bottom:none}
+.step-n{width:22px;height:22px;border-radius:50%;background:var(--green-light);color:var(--green-dark);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-txt{font-size:13px;line-height:1.5}
+
+/* Saved lab records */
+.lab-rec{padding:8px 0;border-bottom:0.5px solid var(--border)}
+.lab-rec:last-child{border-bottom:none}
+.lab-rec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.lab-rec-name{font-size:13px;font-weight:500}
+.lab-rec-sub{font-size:12px;color:var(--text2)}
+</style>
+</head>
+<body>
+
+<!-- Setup Screen -->
+<div class="full-screen" id="setupScreen">
+  <div class="lock-icon"><i class="ti ti-shield-lock"></i></div>
+  <div class="lock-title">My Health</div>
+  <div style="font-size:15px;font-weight:600;color:var(--green);margin-bottom:4px">Notebook</div>
+  <div class="lock-sub">はじめにパスワードを設定してください</div>
+  <div style="width:100%;max-width:290px">
+    <div style="margin-bottom:10px">
+      <div class="rule" id="r-len"><i class="ti ti-circle"></i> 8文字以上</div>
+      <div class="rule" id="r-up"><i class="ti ti-circle"></i> 大文字を含む</div>
+      <div class="rule" id="r-num"><i class="ti ti-circle"></i> 数字を含む</div>
+      <div class="rule" id="r-sym"><i class="ti ti-circle"></i> 記号を含む（推奨）</div>
+    </div>
+    <div class="pw-wrap">
+      <input type="password" id="sp1" placeholder="パスワード" oninput="chkStrength()">
+      <button class="eye-btn" onclick="toggleEye('sp1','se1')"><i class="ti ti-eye" id="se1"></i></button>
+    </div>
+    <div class="pw-strength"><span id="ps1"></span><span id="ps2"></span><span id="ps3"></span><span id="ps4"></span></div>
+    <div class="pw-wrap">
+      <input type="password" id="sp2" placeholder="確認のためもう一度">
+      <button class="eye-btn" onclick="toggleEye('sp2','se2')"><i class="ti ti-eye" id="se2"></i></button>
+    </div>
+    <div class="err-msg" id="setupErr"></div>
+    <button class="btn btn-primary" onclick="doSetup()"><i class="ti ti-check"></i> 設定して始める</button>
+  </div>
+</div>
+
+<!-- Lock Screen -->
+<div class="full-screen" id="lockScreen" style="display:none">
+  <div class="lock-icon"><i class="ti ti-lock"></i></div>
+  <div class="lock-title">My Health</div>
+  <div style="font-size:15px;font-weight:600;color:var(--green);margin-bottom:4px">Notebook</div>
+  <div class="lock-sub">パスワードを入力してください</div>
+  <div id="lockoutBox" style="display:none;width:100%;max-width:290px;margin-bottom:12px">
+    <div class="lockout-box">
+      <div class="lockout-title"><i class="ti ti-lock"></i> 一時ロック中</div>
+      <div style="font-size:12px;color:var(--red-text)">5回連続で間違えました</div>
+      <div class="lockout-cd" id="cdNum">--</div>
+      <div style="font-size:12px;color:var(--red-text)">秒後に再試行できます</div>
+    </div>
+  </div>
+  <div id="loginBox" style="width:100%;max-width:290px;display:flex;flex-direction:column;align-items:center">
+    <div class="pw-wrap">
+      <input type="password" id="lp" placeholder="パスワード" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="eye-btn" onclick="toggleEye('lp','le1')"><i class="ti ti-eye" id="le1"></i></button>
+    </div>
+    <div class="err-msg" id="loginErr"></div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px;min-height:16px" id="attInfo"></div>
+    <button class="btn btn-primary" style="width:100%;max-width:290px" onclick="doLogin()"><i class="ti ti-lock-open"></i> ログイン</button>
+  </div>
+</div>
+
+<!-- Main App -->
+<div class="app" id="mainApp" style="display:none">
+  <div class="header">
+    <div class="app-brand">
+      <div class="app-name">My Health <span>Notebook</span></div>
+      <div class="app-date" id="todayLabel"></div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="openModal('addMedModal')"><i class="ti ti-plus"></i> 薬</button>
+      <button class="icon-btn" onclick="lockApp()"><i class="ti ti-lock"></i></button>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn active" onclick="showScreen('home',this)"><i class="ti ti-home"></i>ホーム</button>
+    <button class="nav-btn" onclick="showScreen('bp',this)"><i class="ti ti-heart-rate-monitor"></i>血圧</button>
+    <button class="nav-btn" onclick="showScreen('cal',this)"><i class="ti ti-calendar"></i>予定</button>
+    <button class="nav-btn" onclick="showScreen('lab',this)"><i class="ti ti-scan"></i>検査</button>
+    <button class="nav-btn" onclick="showScreen('rec',this)"><i class="ti ti-receipt"></i>領収書</button>
+    <button class="nav-btn" onclick="showScreen('photo',this)"><i class="ti ti-camera"></i>写真</button>
+    <button class="nav-btn" onclick="showScreen('cfg',this)"><i class="ti ti-settings"></i>設定</button>
+  </div>
+
+  <div class="screens">
+
+    <!-- HOME -->
+    <div class="screen active" id="screen-home">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">今日の服薬</div>
+          <div><span class="stat-value" id="stDone">0</span><span class="stat-unit"> / <span id="stTotal">0</span></span></div>
+          <div class="progress-bar"><div class="progress-fill" id="stBar" style="width:0%"></div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">今日の血圧</div>
+          <div id="bpStatHome" style="color:var(--text2);font-size:13px;margin-top:3px">未記録</div>
+        </div>
+      </div>
+      <div class="section-label">今日の服薬</div>
+      <div class="card"><div id="medListHome"><div style="color:var(--text2);font-size:13px;padding:8px 0">薬が登録されていません</div></div></div>
+      <div class="section-label">次回通院</div>
+      <div class="card" id="nextVisit"><div style="color:var(--text2);font-size:13px">通院予定なし</div></div>
+    </div>
+
+    <!-- BLOOD PRESSURE -->
+    <div class="screen" id="screen-bp">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">血圧を記録</div>
+          <div id="bpTodayBadge"></div>
+        </div>
+        <div class="bp-grid" style="margin-bottom:4px">
+          <input type="number" id="bpSys" placeholder="収縮期" min="60" max="250" style="text-align:center;margin-bottom:0">
+          <input type="number" id="bpDia" placeholder="拡張期" min="40" max="160" style="text-align:center;margin-bottom:0">
+          <input type="number" id="bpPulse" placeholder="脈拍" min="30" max="200" style="text-align:center;margin-bottom:0">
+        </div>
+        <div class="bp-grid" style="margin-bottom:10px">
+          <div style="font-size:10px;color:var(--text2);text-align:center">収縮期 mmHg</div>
+          <div style="font-size:10px;color:var(--text2);text-align:center">拡張期 mmHg</div>
+          <div style="font-size:10px;color:var(--text2);text-align:center">脈拍 bpm</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <select id="bpTime" style="margin-bottom:0"><option value="朝">朝（起床後）</option><option value="夜">夜（就寝前）</option><option value="昼">昼</option></select>
+          <input type="text" id="bpNote" placeholder="メモ（任意）" style="margin-bottom:0">
+        </div>
+        <button class="btn btn-primary" onclick="saveBP()"><i class="ti ti-check"></i> 記録する</button>
+        <div id="bpMsg" style="font-size:12px;color:var(--green);text-align:center;min-height:18px;margin-top:2px"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">血圧の目安</div></div>
+        <div class="bp-ref">
+          <div class="bp-ref-item" style="background:var(--green-light)"><div style="font-weight:600;color:var(--green-dark);font-size:12px">正常</div><div style="color:var(--green-dark);font-size:12px">120/80 未満</div></div>
+          <div class="bp-ref-item" style="background:var(--amber-light)"><div style="font-weight:600;color:var(--amber-text);font-size:12px">正常高値</div><div style="color:var(--amber-text);font-size:12px">130/80 未満</div></div>
+          <div class="bp-ref-item" style="background:var(--amber-light)"><div style="font-weight:600;color:var(--amber-text);font-size:12px">高値血圧</div><div style="color:var(--amber-text);font-size:12px">139/89 以下</div></div>
+          <div class="bp-ref-item" style="background:var(--red-light)"><div style="font-weight:600;color:var(--red-text);font-size:12px">高血圧</div><div style="color:var(--red-text);font-size:12px">140/90 以上</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">記録履歴</div><span class="badge badge-blue" id="bpCount">0件</span></div>
+        <canvas id="bpChart" style="width:100%;height:110px;display:block;margin-bottom:10px"></canvas>
+        <div id="bpHistory"><div style="color:var(--text2);font-size:13px">記録がありません</div></div>
+      </div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="screen" id="screen-cal">
+      <div class="card">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" onclick="changeMonth(-1)"><i class="ti ti-chevron-left"></i></button>
+          <div class="cal-month" id="calMonth"></div>
+          <button class="cal-nav-btn" onclick="changeMonth(1)"><i class="ti ti-chevron-right"></i></button>
+        </div>
+        <div class="cal-grid" id="calHead"></div>
+        <div class="cal-grid" id="calBody"></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title" id="selDateLabel">日付を選択</div>
+          <button class="btn btn-sm btn-primary" onclick="openModal('addEvtModal')"><i class="ti ti-plus"></i></button>
+        </div>
+        <div id="dayEvts"><div style="color:var(--text2);font-size:13px">この日の予定はありません</div></div>
+      </div>
+    </div>
+
+    <!-- LAB SCANNER -->
+    <div class="screen" id="screen-lab">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><i class="ti ti-scan" style="color:var(--green)"></i> 検査結果スキャン</div></div>
+        <div class="info-box info-blue" style="margin-bottom:10px">
+          <i class="ti ti-shield-lock"></i>
+          <div>画像はAI解析のためAnthropicサーバーに送信されます。解析後は保存されません。氏名・生年月日は必ず黒塗りしてください。</div>
+        </div>
+        <!-- s1 -->
+        <div id="ls1">
+          <div class="step-list" style="margin-bottom:12px">
+            <div class="step"><div class="step-n">1</div><div class="step-txt">検査結果用紙を撮影</div></div>
+            <div class="step"><div class="step-n">2</div><div class="step-txt"><strong>氏名・生年月日を黒塗り</strong></div></div>
+            <div class="step"><div class="step-n">3</div><div class="step-txt">AIが項目・数値・基準値を自動読み取り</div></div>
+            <div class="step"><div class="step-n">4</div><div class="step-txt">確認してカレンダーに保存</div></div>
+          </div>
+          <button class="btn btn-primary" onclick="document.getElementById('labCam').click()"><i class="ti ti-camera"></i> 撮影する</button>
+          <button class="btn" onclick="document.getElementById('labFile').click()"><i class="ti ti-photo"></i> 写真から選ぶ</button>
+          <input type="file" id="labCam" accept="image/*" capture="environment" style="display:none" onchange="labLoad(this)">
+          <input type="file" id="labFile" accept="image/*" style="display:none" onchange="labLoad(this)">
+        </div>
+        <!-- s2 edit -->
+        <div id="ls2" style="display:none">
+          <div class="info-box info-amber"><i class="ti ti-pencil"></i><div>指でなぞって個人情報を<strong>黒塗り</strong>してください</div></div>
+          <div class="toolbar">
+            <button class="tool-btn on" onclick="setLabTool('draw')"><i class="ti ti-pencil"></i> 黒塗り</button>
+            <button class="tool-btn" onclick="labUndo()"><i class="ti ti-arrow-back-up"></i> 戻す</button>
+            <button class="tool-btn" onclick="labClear()"><i class="ti ti-eraser"></i> 解除</button>
+            <select id="labBrush" style="width:80px;margin-bottom:0;padding:5px 6px;font-size:12px" onchange="labBrushSize=parseInt(this.value)">
+              <option value="18">細め</option><option value="34" selected>普通</option><option value="54">太め</option>
+            </select>
+          </div>
+          <div class="canvas-wrap"><canvas id="editCanvas"></canvas></div>
+          <div class="btn-row">
+            <button class="btn" onclick="labBack1()" style="flex:1"><i class="ti ti-arrow-left"></i> 戻る</button>
+            <button class="btn btn-primary" onclick="labSendAI()" style="flex:2"><i class="ti ti-wand"></i> AIで読み取る</button>
+          </div>
+        </div>
+        <!-- s3 loading -->
+        <div id="ls3" style="display:none">
+          <div style="display:flex;flex-direction:column;align-items:center;padding:24px 0;gap:10px">
+            <div class="spinner"></div>
+            <div style="font-size:14px;font-weight:500">AIが解析中...</div>
+            <div style="font-size:12px;color:var(--text2)">検査項目・数値・基準値を読み取っています</div>
+          </div>
+        </div>
+        <!-- s4 result -->
+        <div id="ls4" style="display:none">
+          <div class="info-box info-green"><i class="ti ti-circle-check"></i><div>読み取り完了。内容を確認してカレンダーに保存してください。</div></div>
+          <input type="date" id="labDate">
+          <input type="text" id="labHosp" placeholder="医療機関名（任意）">
+          <div class="section-label">読み取り結果</div>
+          <div id="labResultTable"></div>
+          <div class="section-label">AIの所見</div>
+          <div id="labComment" style="font-size:13px;color:var(--text2);background:var(--gray-light);border-radius:8px;padding:10px;margin-bottom:10px;line-height:1.6"></div>
+          <div class="btn-row">
+            <button class="btn" onclick="labBack2()" style="flex:1"><i class="ti ti-arrow-left"></i> 再読取</button>
+            <button class="btn btn-primary" onclick="labSave()" style="flex:2"><i class="ti ti-calendar-plus"></i> カレンダーに保存</button>
+          </div>
+          <div id="labSaveMsg" style="font-size:12px;color:var(--green);text-align:center;min-height:18px;margin-top:4px"></div>
+        </div>
+        <!-- s5 saved -->
+        <div id="ls5" style="display:none">
+          <div class="info-box info-green" style="flex-direction:column;align-items:center;text-align:center;padding:20px">
+            <i class="ti ti-calendar-check" style="font-size:34px;color:var(--green);margin-bottom:8px"></i>
+            <div style="font-size:15px;font-weight:600;margin-bottom:4px">カレンダーに保存しました</div>
+            <div id="labSavedSum" style="font-size:13px;color:var(--text2)"></div>
+          </div>
+          <div id="labSavedAlert"></div>
+          <button class="btn btn-primary" onclick="labReset()"><i class="ti ti-plus"></i> 別の検査結果を追加</button>
+        </div>
+      </div>
+      <!-- saved records -->
+      <div class="card" id="labRecCard" style="display:none">
+        <div class="card-header"><div class="card-title">保存済み検査結果</div></div>
+        <div id="labRecList"></div>
+      </div>
+    </div>
+
+    <!-- RECEIPTS -->
+    <div class="screen" id="screen-rec">
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <button class="btn btn-sm btn-primary" id="rfAll" onclick="filterRec('all',this)" style="flex:1">すべて</button>
+        <button class="btn btn-sm" id="rfH" onclick="filterRec('h',this)" style="flex:1">病院</button>
+        <button class="btn btn-sm" id="rfP" onclick="filterRec('p',this)" style="flex:1">薬局</button>
+      </div>
+      <div class="card"><div id="recList"><div style="color:var(--text2);font-size:13px;padding:8px 0">領収書が登録されていません</div></div></div>
+      <button class="btn btn-primary" onclick="openModal('addRecModal')"><i class="ti ti-plus"></i> 領収書を追加</button>
+    </div>
+
+    <!-- SKIN PHOTOS -->
+    <div class="screen" id="screen-photo">
+      <div class="section-label">皮膚写真（撮影日付き）</div>
+      <div class="photo-grid" id="skinGrid">
+        <div class="photo-cell add-btn" onclick="document.getElementById('skinInput').click()"><i class="ti ti-camera-plus"></i></div>
+      </div>
+      <input type="file" id="skinInput" accept="image/*" capture="environment" style="display:none" onchange="addSkin(this)">
+      <div class="section-label" style="margin-top:16px">撮影記録</div>
+      <div class="card" id="skinLog"><div style="color:var(--text2);font-size:13px">写真を撮影するとカレンダーに自動記録されます</div></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="screen" id="screen-cfg">
+      <div class="info-box info-green" style="margin-bottom:10px"><i class="ti ti-shield-check"></i><div style="font-weight:500">セキュリティ保護が有効です</div></div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:10px">セキュリティ</div>
+        <div class="set-row"><div><div class="set-label">パスワードロック</div><div class="set-sub">起動時に認証が必要</div></div><span class="badge badge-green">有効</span></div>
+        <div class="set-row"><div><div class="set-label">連続失敗ロック</div><div class="set-sub">5回失敗で30秒ロック</div></div><span class="badge badge-green">有効</span></div>
+        <div class="set-row"><div><div class="set-label">データ保存</div><div class="set-sub">端末内のみ・外部送信なし</div></div><span class="badge badge-green">端末内</span></div>
+        <div class="set-row"><div><div class="set-label">検査結果AI解析</div><div class="set-sub">解析後は保存されません</div></div><span class="badge badge-amber">送信あり</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:10px">パスワード変更</div>
+        <input type="password" id="cpOld" placeholder="現在のパスワード">
+        <input type="password" id="cpNew1" placeholder="新しいパスワード" oninput="chkNewPw()">
+        <div class="pw-strength" style="margin-bottom:8px"><span id="cp1"></span><span id="cp2"></span><span id="cp3"></span><span id="cp4"></span></div>
+        <input type="password" id="cpNew2" placeholder="確認のためもう一度">
+        <div class="err-msg" id="cpErr" style="margin-bottom:6px"></div>
+        <button class="btn btn-primary" onclick="changePassword()">パスワードを変更</button>
+      </div>
+    </div>
+
+  </div><!-- /screens -->
+</div><!-- /mainApp -->
+
+<!-- MODALS -->
+<div class="modal-overlay" id="addMedModal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title">薬を追加</div><button class="modal-close" onclick="closeModal('addMedModal')"><i class="ti ti-x"></i></button></div>
+    <input type="text" id="mName" placeholder="薬の名前">
+    <input type="text" id="mDose" placeholder="用量（例: 1錠）">
+    <div class="section-label">服用タイミング</div>
+    <div class="tags">
+      <span class="tag" id="t-朝" onclick="toggleTag('朝')">朝</span>
+      <span class="tag" id="t-昼" onclick="toggleTag('昼')">昼</span>
+      <span class="tag" id="t-夕" onclick="toggleTag('夕')">夕</span>
+      <span class="tag" id="t-就寝前" onclick="toggleTag('就寝前')">就寝前</span>
+    </div>
+    <input type="text" id="mNote" placeholder="メモ（任意）">
+    <button class="btn btn-primary" onclick="addMed()">追加する</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addEvtModal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title">予定を追加</div><button class="modal-close" onclick="closeModal('addEvtModal')"><i class="ti ti-x"></i></button></div>
+    <select id="evtType"><option value="visit">通院</option><option value="med">服薬</option><option value="other">その他</option></select>
+    <input type="text" id="evtTitle" placeholder="内容（例: 田中クリニック受診）">
+    <input type="time" id="evtTime">
+    <input type="text" id="evtNote" placeholder="メモ（任意）">
+    <button class="btn btn-primary" onclick="addEvt()">追加する</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addRecModal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title">領収書を追加</div><button class="modal-close" onclick="closeModal('addRecModal')"><i class="ti ti-x"></i></button></div>
+    <select id="recType"><option value="h">病院</option><option value="p">薬局</option></select>
+    <input type="text" id="recName" placeholder="施設名">
+    <input type="date" id="recDate">
+    <input type="number" id="recAmt" placeholder="金額（円）">
+    <input type="text" id="recNote" placeholder="メモ（任意）">
+    <button class="btn" onclick="document.getElementById('recPhoto').click()"><i class="ti ti-camera"></i> 写真を撮影</button>
+    <input type="file" id="recPhoto" accept="image/*" capture="environment" style="display:none" onchange="previewRec(this)">
+    <div id="recPreview"></div>
+    <button class="btn btn-primary" onclick="addRec()">保存する</button>
+  </div>
+</div>
+
+<script>
+// ===== State =====
+const S={pw:null,att:0,lockUntil:null,meds:[],checks:{},events:{},receipts:[],skins:[],bpRecs:[],labRecs:[],selDate:new Date(),curMonth:new Date(),recPhoto:null,selTags:[],labImg:null,labMasks:[],labCurMask:[],labParsed:null};
+let lockTimer=null, labDrawing=false, labBrushSize=34, labCtx=null, labCanvas=null;
+const MONTHS=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const DAYS=['日','月','火','水','木','金','土'];
+
+// ===== Security =====
+function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return h.toString(36);}
+function pwRules(pw){return{len:pw.length>=8,up:/[A-Z]/.test(pw),num:/[0-9]/.test(pw),sym:/[^A-Za-z0-9]/.test(pw)};}
+function chkStrength(){
+  const pw=document.getElementById('sp1').value;const r=pwRules(pw);
+  const sc=[r.len,r.up,r.num,r.sym].filter(Boolean).length;
+  const c=['','#E24B4A','#EF9F27','#1D9E75','#0F6E56'];
+  for(let i=1;i<=4;i++)document.getElementById('ps'+i).style.background=i<=sc?c[sc]:'var(--gray-light)';
+  const setR=(id,ok)=>{const el=document.getElementById('r-'+id);el.className='rule'+(ok?' ok':'');el.querySelector('i').className='ti ti-'+(ok?'circle-check':'circle');};
+  setR('len',r.len);setR('up',r.up);setR('num',r.num);setR('sym',r.sym);
+}
+function chkNewPw(){
+  const pw=document.getElementById('cpNew1').value;const r=pwRules(pw);const sc=[r.len,r.up,r.num,r.sym].filter(Boolean).length;
+  const c=['','#E24B4A','#EF9F27','#1D9E75','#0F6E56'];
+  for(let i=1;i<=4;i++)document.getElementById('cp'+i).style.background=i<=sc?c[sc]:'var(--gray-light)';
+}
+function toggleEye(inp,ico){const el=document.getElementById(inp);const ic=document.getElementById(ico);el.type=el.type==='password'?'text':'password';ic.className='ti ti-eye'+(el.type==='text'?'-off':'');}
+function doSetup(){
+  const p1=document.getElementById('sp1').value,p2=document.getElementById('sp2').value;
+  const r=pwRules(p1);
+  if(!r.len||!r.up||!r.num){document.getElementById('setupErr').textContent='要件を満たしていません（8文字以上・大文字・数字が必要）';return;}
+  if(p1!==p2){document.getElementById('setupErr').textContent='パスワードが一致しません';return;}
+  S.pw=hash(p1);document.getElementById('setupScreen').style.display='none';document.getElementById('mainApp').style.display='flex';init();
+}
+function doLogin(){
+  if(S.lockUntil&&Date.now()<S.lockUntil)return;
+  const pw=document.getElementById('lp').value;
+  if(hash(pw)===S.pw){
+    S.att=0;S.lockUntil=null;document.getElementById('lp').value='';document.getElementById('loginErr').textContent='';document.getElementById('attInfo').textContent='';
+    document.getElementById('lockScreen').style.display='none';document.getElementById('mainApp').style.display='flex';init();
+  }else{
+    S.att++;const rem=5-S.att;
+    if(S.att>=5){S.lockUntil=Date.now()+30000;S.att=0;showLockout();}
+    else{document.getElementById('loginErr').textContent='パスワードが違います';document.getElementById('attInfo').textContent='残り'+rem+'回で一時ロック';}
+    document.getElementById('lp').value='';
+  }
+}
+function showLockout(){
+  document.getElementById('lockoutBox').style.display='block';document.getElementById('loginBox').style.display='none';
+  if(lockTimer)clearInterval(lockTimer);
+  lockTimer=setInterval(()=>{
+    const r=Math.ceil((S.lockUntil-Date.now())/1000);
+    if(r<=0){clearInterval(lockTimer);document.getElementById('lockoutBox').style.display='none';document.getElementById('loginBox').style.display='flex';document.getElementById('loginErr').textContent='';document.getElementById('attInfo').textContent='';}
+    else document.getElementById('cdNum').textContent=r;
+  },500);
+}
+function lockApp(){document.getElementById('mainApp').style.display='none';document.getElementById('lockScreen').style.display='flex';document.getElementById('lp').value='';}
+function changePassword(){
+  const o=document.getElementById('cpOld').value,n1=document.getElementById('cpNew1').value,n2=document.getElementById('cpNew2').value;
+  const err=document.getElementById('cpErr');
+  if(hash(o)!==S.pw){err.textContent='現在のパスワードが違います';return;}
+  const r=pwRules(n1);if(!r.len||!r.up||!r.num){err.textContent='要件を満たしていません';return;}
+  if(n1!==n2){err.textContent='一致しません';return;}
+  S.pw=hash(n1);err.style.color='var(--green)';err.textContent='変更しました';
+  document.getElementById('cpOld').value='';document.getElementById('cpNew1').value='';document.getElementById('cpNew2').value='';
+  setTimeout(()=>{err.textContent='';err.style.color='';},3000);
+}
+
+// ===== Utils =====
+function dk(d){return d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getDate().toString().padStart(2,'0');}
+function showScreen(id,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');if(btn)btn.classList.add('active');
+  if(id==='cal')renderCal();if(id==='bp')renderBP();
+}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function toggleTag(t){const el=document.getElementById('t-'+t);const i=S.selTags.indexOf(t);if(i>=0){S.selTags.splice(i,1);el.classList.remove('on');}else{S.selTags.push(t);el.classList.add('on');}}
+function init(){renderHome();renderCal();renderBP();renderLabRecs();}
+
+// ===== Home =====
+function renderHome(){
+  const today=dk(new Date()),now=new Date();
+  document.getElementById('todayLabel').textContent=now.getFullYear()+'年'+MONTHS[now.getMonth()]+now.getDate()+'日（'+DAYS[now.getDay()]+'）';
+  let rows='',done=0,total=0;
+  ['朝','昼','夕','就寝前'].forEach(t=>{
+    S.meds.forEach(m=>{
+      if(!m.times.includes(t))return;
+      const k=today+'_'+m.id+'_'+t,chk=S.checks[k];
+      if(chk)done++;total++;
+      rows+=`<div class="med-row"><div class="check-circle${chk?' done':''}" onclick="toggleCheck(${m.id},'${t}')">${chk?'<i class="ti ti-check" style="font-size:13px"></i>':''}</div><div class="med-info"><div class="med-name">${m.name}</div><div class="med-sub">${m.dose||''} ${m.note||''}</div></div><span class="badge ${chk?'badge-green':'badge-amber'}">${t}</span></div>`;
+    });
+  });
+  document.getElementById('medListHome').innerHTML=rows||'<div style="color:var(--text2);font-size:13px;padding:8px 0">薬が登録されていません</div>';
+  document.getElementById('stDone').textContent=done;document.getElementById('stTotal').textContent=total;
+  document.getElementById('stBar').style.width=total>0?Math.round(done/total*100)+'%':'0%';
+  const tb=S.bpRecs.filter(r=>r.date===today);
+  if(tb.length>0){const l=tb[tb.length-1];const c=bpCat(l.sys,l.dia);document.getElementById('bpStatHome').innerHTML=`<div style="display:flex;align-items:baseline;gap:2px;margin-top:2px"><span style="font-size:20px;font-weight:600;color:${c.color}">${l.sys}</span><span style="font-size:12px;color:var(--text2)">/</span><span style="font-size:17px;font-weight:600;color:${c.color}">${l.dia}</span><span style="font-size:10px;color:var(--text2);margin-left:2px">mmHg</span></div><span class="badge" style="background:${c.bg};color:${c.color};display:inline-flex;margin-top:2px">${c.label}</span>`;}
+  else document.getElementById('bpStatHome').innerHTML='<div style="color:var(--text2);font-size:13px;margin-top:3px">未記録</div>';
+  const fv=[];Object.entries(S.events).forEach(([d,ev])=>{if(d>today)ev.filter(e=>e.type==='visit').forEach(e=>fv.push({d,e}));});
+  fv.sort((a,b)=>a.d.localeCompare(b.d));
+  if(fv.length>0){const f=fv[0];const d2=new Date(f.d+'T12:00:00');document.getElementById('nextVisit').innerHTML=`<div class="event-item"><div class="event-dot" style="background:var(--blue)"></div><div class="event-label">${f.e.title}</div><div class="event-time">${d2.getMonth()+1}/${d2.getDate()}</div></div>`;}
+  else document.getElementById('nextVisit').innerHTML='<div style="color:var(--text2);font-size:13px">通院予定なし</div>';
+}
+function toggleCheck(mid,t){const k=dk(new Date())+'_'+mid+'_'+t;S.checks[k]=!S.checks[k];renderHome();}
+function addMed(){
+  const name=document.getElementById('mName').value.trim();if(!name)return;
+  S.meds.push({id:Date.now(),name,dose:document.getElementById('mDose').value.trim(),times:[...S.selTags],note:document.getElementById('mNote').value.trim()});
+  S.selTags=[];document.querySelectorAll('.tag').forEach(t=>t.classList.remove('on'));
+  ['mName','mDose','mNote'].forEach(id=>document.getElementById(id).value='');
+  closeModal('addMedModal');renderHome();
+}
+
+// ===== Blood Pressure =====
+function bpCat(s,d){
+  if(s<120&&d<80)return{label:'正常',color:'var(--green-dark)',bg:'var(--green-light)'};
+  if(s<130&&d<80)return{label:'正常高値',color:'var(--amber-text)',bg:'var(--amber-light)'};
+  if(s<=139||d<=89)return{label:'高値血圧',color:'var(--amber-text)',bg:'var(--amber-light)'};
+  return{label:'高血圧',color:'var(--red-text)',bg:'var(--red-light)'};
+}
+function saveBP(){
+  const sys=parseInt(document.getElementById('bpSys').value),dia=parseInt(document.getElementById('bpDia').value);
+  if(!sys||!dia||sys<60||sys>250||dia<40||dia>160){document.getElementById('bpMsg').style.color='var(--red-text)';document.getElementById('bpMsg').textContent='正しい値を入力してください';setTimeout(()=>document.getElementById('bpMsg').textContent='',3000);return;}
+  const pulse=document.getElementById('bpPulse').value?parseInt(document.getElementById('bpPulse').value):null;
+  const time=document.getElementById('bpTime').value,note=document.getElementById('bpNote').value.trim();
+  const d=dk(new Date());
+  S.bpRecs.push({id:Date.now(),date:d,time,sys,dia,pulse,note});
+  if(!S.events[d])S.events[d]=[];S.events[d]=S.events[d].filter(e=>e.bpT!==time);
+  S.events[d].push({type:'bp',title:`血圧 ${sys}/${dia}（${time}）`,time:'',bpT:time});
+  ['bpSys','bpDia','bpPulse','bpNote'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('bpMsg').style.color='var(--green)';document.getElementById('bpMsg').textContent='記録しました';setTimeout(()=>document.getElementById('bpMsg').textContent='',2500);
+  renderBP();renderHome();renderCal();
+}
+function renderBP(){
+  const today=dk(new Date());const tb=S.bpRecs.filter(r=>r.date===today);
+  document.getElementById('bpTodayBadge').innerHTML=tb.length>0?(()=>{const c=bpCat(tb[tb.length-1].sys,tb[tb.length-1].dia);return`<span class="badge" style="background:${c.bg};color:${c.color}">${c.label}</span>`;})():'';
+  document.getElementById('bpCount').textContent=S.bpRecs.length+'件';
+  const sorted=[...S.bpRecs].sort((a,b)=>b.id-a.id);
+  document.getElementById('bpHistory').innerHTML=sorted.length>0?sorted.slice(0,15).map(r=>{const c=bpCat(r.sys,r.dia);const p=r.date.split('-');return`<div class="bp-row"><div class="bp-date">${p[1]}/${p[2]}<br><span style="font-size:10px">${r.time}</span></div><div class="bp-val">${r.sys}/<span style="font-size:12px">${r.dia}</span> <span style="font-size:10px;color:var(--text2)">mmHg</span>${r.pulse?` <span style="font-size:11px;color:var(--text2)">${r.pulse}bpm</span>`:''}</div><div class="bp-cat"><span class="badge" style="background:${c.bg};color:${c.color}">${c.label}</span></div></div>`;}).join(''):'<div style="color:var(--text2);font-size:13px">記録がありません</div>';
+  drawBPChart();
+}
+function drawBPChart(){
+  const cv=document.getElementById('bpChart');if(!cv)return;
+  const ctx=cv.getContext('2d'),dpr=window.devicePixelRatio||1;
+  cv.width=(cv.offsetWidth||300)*dpr;cv.height=110*dpr;ctx.scale(dpr,dpr);
+  const W=cv.offsetWidth||300,H=110;ctx.clearRect(0,0,W,H);
+  const recs=[...S.bpRecs].sort((a,b)=>a.id-b.id).slice(-14);
+  if(recs.length<2){ctx.fillStyle='#aaa';ctx.font='12px sans-serif';ctx.textAlign='center';ctx.fillText('2件以上記録するとグラフ表示',W/2,H/2);return;}
+  const sv=recs.map(r=>r.sys),dv=recs.map(r=>r.dia);
+  const all=[...sv,...dv],mn=Math.min(...all)-10,mx=Math.max(...all)+10;
+  const pl={l:28,r:8,t:8,b:16},cw=W-pl.l-pl.r,ch=H-pl.t-pl.b;
+  const xs=cw/(recs.length-1),ys=v=>pl.t+ch-(v-mn)/(mx-mn)*ch;
+  ctx.strokeStyle='rgba(226,75,74,0.3)';ctx.lineWidth=1;ctx.setLineDash([4,3]);
+  ctx.beginPath();ctx.moveTo(pl.l,ys(140));ctx.lineTo(pl.l+cw,ys(140));ctx.stroke();ctx.setLineDash([]);
+  [[sv,'#E24B4A'],[dv,'#378ADD']].forEach(([vals,col])=>{
+    ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();
+    vals.forEach((v,i)=>{i?ctx.lineTo(pl.l+i*xs,ys(v)):ctx.moveTo(pl.l,ys(v));});ctx.stroke();
+    vals.forEach((v,i)=>{ctx.fillStyle=col;ctx.beginPath();ctx.arc(pl.l+i*xs,ys(v),3,0,Math.PI*2);ctx.fill();});
+  });
+  ctx.fillStyle='#888';ctx.font='9px sans-serif';ctx.textAlign='right';
+  [mn,mx].forEach(v=>ctx.fillText(Math.round(v),pl.l-2,ys(v)+3));
+}
+
+// ===== Calendar =====
+function renderCal(){
+  const cm=S.curMonth;
+  document.getElementById('calMonth').textContent=cm.getFullYear()+'年'+MONTHS[cm.getMonth()];
+  document.getElementById('calHead').innerHTML=DAYS.map(d=>`<div class="cal-head">${d}</div>`).join('');
+  const first=new Date(cm.getFullYear(),cm.getMonth(),1),last=new Date(cm.getFullYear(),cm.getMonth()+1,0);
+  const today=dk(new Date()),selK=dk(S.selDate);
+  let html='';
+  for(let i=0;i<first.getDay();i++){const d=new Date(first);d.setDate(d.getDate()-first.getDay()+i);html+=`<div class="cal-cell dim"><span class="cal-num">${d.getDate()}</span></div>`;}
+  for(let d=1;d<=last.getDate();d++){
+    const date=new Date(cm.getFullYear(),cm.getMonth(),d),k=dk(date);
+    const isT=k===today,isS=k===selK;
+    const evs=S.events[k]||[],bpR=S.bpRecs.filter(r=>r.date===k);
+    const hasOther=evs.some(e=>e.type!=='bp');
+    let inner=`<span class="cal-num">${d}</span>`;
+    if(bpR.length>0){const l=bpR[bpR.length-1];const c=bpCat(l.sys,l.dia);inner+=`<span class="cal-bp" style="background:${c.bg};color:${c.color}">${l.sys}/${l.dia}</span>`;}
+    if(hasOther)inner+=`<div class="cal-dots"><div class="cal-dot" style="background:var(--red)"></div></div>`;
+    html+=`<div class="cal-cell ${isT?'today':''} ${isS&&!isT?'sel':''}" onclick="selDate('${k}')">${inner}</div>`;
+  }
+  document.getElementById('calBody').innerHTML=html;renderDayEvts();
+}
+function selDate(k){const p=k.split('-');S.selDate=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));renderCal();}
+function renderDayEvts(){
+  const k=dk(S.selDate),d=S.selDate;
+  document.getElementById('selDateLabel').textContent=(d.getMonth()+1)+'月'+d.getDate()+'日（'+DAYS[d.getDay()]+'）';
+  const evs=S.events[k]||[];
+  const cols={visit:'var(--blue)',med:'var(--green)',other:'var(--gray)',skin:'var(--amber)',bp:'var(--red)',lab:'#7F77DD'};
+  document.getElementById('dayEvts').innerHTML=evs.length>0?evs.map(e=>`<div class="event-item"><div class="event-dot" style="background:${cols[e.type]||'var(--gray)'}"></div><div class="event-label">${e.title}</div><div class="event-time">${e.time||''}</div></div>`).join(''):'<div style="color:var(--text2);font-size:13px">この日の予定はありません</div>';
+}
+function changeMonth(d){S.curMonth.setMonth(S.curMonth.getMonth()+d);renderCal();}
+function addEvt(){
+  const type=document.getElementById('evtType').value,title=document.getElementById('evtTitle').value.trim();if(!title)return;
+  const k=dk(S.selDate);if(!S.events[k])S.events[k]=[];
+  S.events[k].push({type,title,time:document.getElementById('evtTime').value,note:document.getElementById('evtNote').value.trim()});
+  ['evtTitle','evtTime','evtNote'].forEach(id=>document.getElementById(id).value='');
+  closeModal('addEvtModal');renderCal();renderHome();
+}
+
+// ===== Lab Scanner =====
+function labLoad(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();reader.onload=e=>{S.labImg=new Image();S.labImg.onload=()=>{labShowStep(2);labInitCanvas();};S.labImg.src=e.target.result;};reader.readAsDataURL(file);input.value='';
+}
+function labShowStep(n){[1,2,3,4,5].forEach(i=>document.getElementById('ls'+i).style.display=i===n?'block':'none');}
+function labInitCanvas(){
+  labCanvas=document.getElementById('editCanvas');labCtx=labCanvas.getContext('2d');
+  const wrap=document.getElementById('ls2');const maxW=wrap.offsetWidth-28||320;
+  labCanvas.width=S.labImg.naturalWidth;labCanvas.height=S.labImg.naturalHeight;
+  labCanvas.style.width=maxW+'px';labCanvas.style.height=Math.round(S.labImg.naturalHeight*(maxW/S.labImg.naturalWidth))+'px';
+  S.labMasks=[];S.labCurMask=[];labDraw();labAddEvents();
+}
+function labDraw(){
+  labCtx.clearRect(0,0,labCanvas.width,labCanvas.height);labCtx.drawImage(S.labImg,0,0);
+  [...S.labMasks,S.labCurMask].forEach(m=>{if(m.length===0)return;labCtx.fillStyle='#000';m.forEach(p=>{labCtx.beginPath();labCtx.arc(p.x,p.y,p.r,0,Math.PI*2);labCtx.fill();});});
+}
+function labGetPos(e){const r=labCanvas.getBoundingClientRect(),sx=labCanvas.width/r.width,sy=labCanvas.height/r.height;if(e.touches)return{x:(e.touches[0].clientX-r.left)*sx,y:(e.touches[0].clientY-r.top)*sy};return{x:(e.clientX-r.left)*sx,y:(e.clientY-r.top)*sy};}
+function labAddEvents(){
+  const start=e=>{labDrawing=true;S.labCurMask=[];const p=labGetPos(e);S.labCurMask.push({x:p.x,y:p.y,r:labBrushSize});labDraw();};
+  const move=e=>{if(!labDrawing)return;const p=labGetPos(e);S.labCurMask.push({x:p.x,y:p.y,r:labBrushSize});labDraw();};
+  const end=()=>{if(labDrawing&&S.labCurMask.length>0)S.labMasks.push([...S.labCurMask]);S.labCurMask=[];labDrawing=false;};
+  labCanvas.onmousedown=start;labCanvas.onmousemove=move;labCanvas.onmouseup=end;
+  labCanvas.ontouchstart=e=>{e.preventDefault();start(e);};labCanvas.ontouchmove=e=>{e.preventDefault();move(e);};labCanvas.ontouchend=end;
+}
+function setLabTool(t){document.querySelectorAll('.tool-btn').forEach(b=>b.classList.toggle('on',b.textContent.includes('黒塗')));}
+function labUndo(){if(S.labMasks.length>0){S.labMasks.pop();labDraw();}}
+function labClear(){S.labMasks=[];S.labCurMask=[];labDraw();}
+function labBack1(){labShowStep(1);}
+function labBack2(){labShowStep(2);}
+async function labSendAI(){
+  labDraw();const data=labCanvas.toDataURL('image/jpeg',0.85).split(',')[1];
+  labShowStep(3);
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',max_tokens:1000,
+      system:`医療検査結果を読み取るアシスタントです。以下のJSON形式のみで返答してください。前置き不要。{"date":"YYYY-MM-DD or null","hospital":"施設名 or null","items":[{"name":"項目名","value":"数値","unit":"単位","ref":"基準値","flag":"H or L or null"}],"comment":"50文字以内の所見"}`,
+      messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data}},{type:'text',text:'この検査結果を読み取ってください。氏名・生年月日は黒塗りされています。'}]}]
+    })});
+    const json=await resp.json();
+    const txt=json.content.filter(c=>c.type==='text').map(c=>c.text).join('');
+    S.labParsed=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    labShowResult(S.labParsed);
+  }catch(e){labShowStep(2);alert('読み取りエラー：'+e.message);}
+}
+function labShowResult(p){
+  labShowStep(4);
+  const today=new Date();document.getElementById('labDate').value=p.date||(today.getFullYear()+'-'+(today.getMonth()+1).toString().padStart(2,'0')+'-'+today.getDate().toString().padStart(2,'0'));
+  document.getElementById('labHosp').value=p.hospital||'';
+  const items=p.items||[];
+  document.getElementById('labResultTable').innerHTML=items.length>0?items.map(it=>{
+    const fc=it.flag==='H'?'badge-red':it.flag==='L'?'badge-blue':'badge-green';const fl=it.flag==='H'?'高値':it.flag==='L'?'低値':'正常';
+    return`<div class="lab-item"><div class="lab-name">${it.name}</div><div class="lab-val">${it.value} <span style="font-size:10px;color:var(--text2)">${it.unit||''}</span></div><div class="lab-ref">${it.ref||''}</div><span class="badge ${fc}">${fl}</span></div>`;
+  }).join(''):'<div style="color:var(--text2);font-size:13px">項目が読み取れませんでした</div>';
+  document.getElementById('labComment').textContent=p.comment||'特記事項なし';
+}
+function labSave(){
+  const date=document.getElementById('labDate').value,hosp=document.getElementById('labHosp').value.trim();
+  const items=S.labParsed?.items||[],abn=items.filter(i=>i.flag==='H'||i.flag==='L');
+  const rec={id:Date.now(),date,hosp,items,comment:S.labParsed?.comment||''};
+  S.labRecs.push(rec);
+  if(date){const k=date;if(!S.events[k])S.events[k]=[];S.events[k].push({type:'lab',title:`検査結果 ${hosp||''}（${items.length}項目）`,time:''});}
+  document.getElementById('labSavedSum').textContent=`${date?date.replace(/-/g,'/'):'不明'} ${hosp||''} ${items.length}項目`;
+  document.getElementById('labSavedAlert').innerHTML=abn.length>0?`<div class="info-box info-amber"><i class="ti ti-alert-triangle"></i><div>要注意：${abn.map(i=>`${i.name}(${i.flag==='H'?'高':'低'})`).join('、')}</div></div>`:'';
+  labShowStep(5);renderLabRecs();renderCal();
+}
+function renderLabRecs(){
+  if(S.labRecs.length===0){document.getElementById('labRecCard').style.display='none';return;}
+  document.getElementById('labRecCard').style.display='block';
+  document.getElementById('labRecList').innerHTML=[...S.labRecs].reverse().map(r=>{
+    const abn=r.items.filter(i=>i.flag==='H'||i.flag==='L');
+    return`<div class="lab-rec"><div class="lab-rec-head"><div class="lab-rec-name">${r.date?r.date.replace(/-/g,'/'):'不明'} ${r.hosp||''}</div><span class="badge badge-blue">${r.items.length}項目</span></div><div class="lab-rec-sub">${abn.length>0?'要注意：'+abn.map(i=>i.name).join('、'):'異常なし'}</div>${r.comment?`<div style="font-size:11px;color:var(--text2);margin-top:2px">${r.comment}</div>`:''}</div>`;
+  }).join('');
+}
+function labReset(){S.labParsed=null;S.labMasks=[];S.labCurMask=[];S.labImg=null;labShowStep(1);}
+
+// ===== Receipts =====
+function filterRec(type,btn){document.querySelectorAll('#screen-rec .btn-sm').forEach(b=>b.classList.remove('btn-primary'));btn.classList.add('btn-primary');renderRec(type);}
+function renderRec(filter='all'){
+  const list=S.receipts.filter(r=>filter==='all'||r.type===filter);
+  if(list.length===0){document.getElementById('recList').innerHTML='<div style="color:var(--text2);font-size:13px;padding:8px 0">領収書が登録されていません</div>';return;}
+  document.getElementById('recList').innerHTML=list.map(r=>`<div class="rec-item"><div class="rec-icon ${r.type}"><i class="ti ti-${r.type==='h'?'building-hospital':'pill'}"></i></div><div class="rec-info"><div class="rec-name">${r.name}</div><div class="rec-date">${r.date||''} ${r.note||''}</div>${r.photo?`<img src="${r.photo}" style="height:36px;border-radius:4px;margin-top:4px">`:''}</div><div class="rec-amt">${r.amt?'¥'+parseInt(r.amt).toLocaleString():''}</div></div>`).join('');
+}
+function previewRec(input){const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{S.recPhoto=e.target.result;document.getElementById('recPreview').innerHTML=`<img src="${e.target.result}" style="width:100%;border-radius:8px;margin-bottom:8px">`;};reader.readAsDataURL(file);}
+function addRec(){
+  const name=document.getElementById('recName').value.trim();if(!name)return;
+  const date=document.getElementById('recDate').value;
+  S.receipts.push({type:document.getElementById('recType').value,name,date,amt:document.getElementById('recAmt').value,note:document.getElementById('recNote').value.trim(),photo:S.recPhoto});
+  if(date){const k=date;if(!S.events[k])S.events[k]=[];S.events[k].push({type:'visit',title:name+'（領収書）',time:''});}
+  S.recPhoto=null;['recName','recDate','recAmt','recNote'].forEach(id=>document.getElementById(id).value='');document.getElementById('recPreview').innerHTML='';
+  closeModal('addRecModal');renderRec('all');renderHome();
+}
+
+// ===== Skin Photos =====
+function addSkin(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();reader.onload=e=>{
+    const now=new Date(),k=dk(now),ds=(now.getMonth()+1)+'/'+now.getDate(),tm=now.getHours()+':'+now.getMinutes().toString().padStart(2,'0');
+    S.skins.push({src:e.target.result,date:k,ds,tm});
+    if(!S.events[k])S.events[k]=[];S.events[k].push({type:'skin',title:'皮膚写真撮影',time:tm});
+    renderSkin();
+  };reader.readAsDataURL(file);input.value='';
+}
+function renderSkin(){
+  let html=`<div class="photo-cell add-btn" onclick="document.getElementById('skinInput').click()"><i class="ti ti-camera-plus"></i></div>`;
+  [...S.skins].reverse().forEach(p=>{html+=`<div class="photo-cell"><img src="${p.src}" loading="lazy"><div class="photo-label">${p.ds} ${p.tm}</div></div>`;});
+  document.getElementById('skinGrid').innerHTML=html;
+  document.getElementById('skinLog').innerHTML=S.skins.length>0?[...S.skins].reverse().map(p=>`<div class="event-item"><div class="event-dot" style="background:var(--amber)"></div><div class="event-label">皮膚写真</div><div class="event-time">${p.ds} ${p.tm}</div></div>`).join(''):'<div style="color:var(--text2);font-size:13px">写真を撮影するとカレンダーに自動記録されます</div>';
+}
+
+// ===== Init =====
+document.getElementById('recDate').valueAsDate=new Date();
+document.getElementById('labDate').valueAsDate=new Date();
+</script>
+</body>
+</html>
