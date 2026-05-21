@@ -223,17 +223,10 @@ canvas#editCanvas{display:block;width:100%;cursor:crosshair}
   <div style="font-size:15px;font-weight:600;color:var(--green);margin-bottom:4px">Notebook</div>
   <div class="lock-sub">はじめにパスワードを設定してください</div>
   <div style="width:100%;max-width:290px">
-    <div style="margin-bottom:10px">
-      <div class="rule" id="r-len"><i class="ti ti-circle"></i> 8文字以上</div>
-      <div class="rule" id="r-up"><i class="ti ti-circle"></i> 大文字を含む</div>
-      <div class="rule" id="r-num"><i class="ti ti-circle"></i> 数字を含む</div>
-      <div class="rule" id="r-sym"><i class="ti ti-circle"></i> 記号を含む（推奨）</div>
-    </div>
     <div class="pw-wrap">
-      <input type="password" id="sp1" placeholder="パスワード" oninput="chkStrength()">
+      <input type="password" id="sp1" placeholder="パスワードを入力">
       <button class="eye-btn" onclick="toggleEye('sp1','se1')"><i class="ti ti-eye" id="se1"></i></button>
     </div>
-    <div class="pw-strength"><span id="ps1"></span><span id="ps2"></span><span id="ps3"></span><span id="ps4"></span></div>
     <div class="pw-wrap">
       <input type="password" id="sp2" placeholder="確認のためもう一度">
       <button class="eye-btn" onclick="toggleEye('sp2','se2')"><i class="ti ti-eye" id="se2"></i></button>
@@ -566,8 +559,7 @@ function chkNewPw(){
 function toggleEye(inp,ico){const el=document.getElementById(inp);const ic=document.getElementById(ico);el.type=el.type==='password'?'text':'password';ic.className='ti ti-eye'+(el.type==='text'?'-off':'');}
 function doSetup(){
   const p1=document.getElementById('sp1').value,p2=document.getElementById('sp2').value;
-  const r=pwRules(p1);
-  if(!r.len||!r.up||!r.num){document.getElementById('setupErr').textContent='要件を満たしていません（8文字以上・大文字・数字が必要）';return;}
+  if(!p1){document.getElementById('setupErr').textContent='パスワードを入力してください';return;}
   if(p1!==p2){document.getElementById('setupErr').textContent='パスワードが一致しません';return;}
   S.pw=hash(p1);document.getElementById('setupScreen').style.display='none';document.getElementById('mainApp').style.display='flex';init();
 }
