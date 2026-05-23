@@ -178,8 +178,7 @@ canvas#ec{display:block;width:100%;cursor:crosshair}
   <div class="lt">My Health Notebook</div>
   <div class="ls">はじめにパスワードを設定してください</div>
   <div style="width:100%;max-width:290px">
-    <div class="pw"><input type="password" id="sp1" placeholder="パスワードを入力"><button class="ey" onclick="toggleEye('sp1','se1')"><i class="ti ti-eye" id="se1"></i></button></div>
-    <div class="pw"><input type="password" id="sp2" placeholder="確認のためもう一度"><button class="ey" onclick="toggleEye('sp2','se2')"><i class="ti ti-eye" id="se2"></i></button></div>
+    <div class="pw"><input type="password" id="sp1" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter')doSetup()"><button class="ey" onclick="toggleEye('sp1','se1')"><i class="ti ti-eye" id="se1"></i></button></div>
     <div class="em" id="sErr"></div>
     <button class="btn bp" onclick="doSetup()"><i class="ti ti-check"></i> 設定して始める</button>
   </div>
@@ -233,10 +232,31 @@ canvas#ec{display:block;width:100%;cursor:crosshair}
         <div class="dxs" id="DXS"></div>
         <button onclick="openM('DXM')" style="margin-top:8px;background:none;border:.5px solid var(--green);border-radius:6px;color:var(--green-dark);cursor:pointer;padding:4px 10px;font-size:12px;font-family:inherit"><i class="ti ti-edit"></i> 日付を設定</button>
       </div>
-      <div class="sg">
-        <div class="sc"><div class="sl">今日の服薬</div><div><span class="sv" id="stD">0</span><span class="su"> / <span id="stT">0</span></span></div><div class="pb"><div class="pf" id="stB" style="width:0%"></div></div></div>
-        <div class="sc"><div class="sl">今日の血圧</div><div id="bpH" style="color:var(--text2);font-size:13px;margin-top:3px">未記録</div></div>
+      <!-- Big action buttons -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <button onclick="showScr('bp',document.querySelectorAll('.nb')[1])" style="background:var(--green-light);border:1.5px solid var(--green);border-radius:14px;padding:18px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;font-family:inherit">
+          <i class="ti ti-heart-rate-monitor" style="font-size:36px;color:var(--green)"></i>
+          <div style="font-size:13px;font-weight:700;color:var(--green-dark)">血圧を記録</div>
+          <div id="bpH" style="font-size:12px;color:var(--text2);min-height:16px">未記録</div>
+        </button>
+        <button onclick="showScr('cal',document.querySelectorAll('.nb')[2])" style="background:var(--blue-light);border:1.5px solid var(--blue);border-radius:14px;padding:18px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;font-family:inherit">
+          <i class="ti ti-calendar-plus" style="font-size:36px;color:var(--blue)"></i>
+          <div style="font-size:13px;font-weight:700;color:var(--blue-text)">予定を追加</div>
+          <div id="NVS" style="font-size:12px;color:var(--text2);min-height:16px">通院予定なし</div>
+        </button>
+        <button onclick="showScr('lab',document.querySelectorAll('.nb')[3])" style="background:#F0EEFB;border:1.5px solid #7F77DD;border-radius:14px;padding:18px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;font-family:inherit">
+          <i class="ti ti-scan" style="font-size:36px;color:#7F77DD"></i>
+          <div style="font-size:13px;font-weight:700;color:#5048A8">検査結果</div>
+          <div style="font-size:12px;color:var(--text2)">スキャン</div>
+        </button>
+        <button onclick="openM('MM')" style="background:var(--amber-light);border:1.5px solid var(--amber);border-radius:14px;padding:18px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;font-family:inherit">
+          <i class="ti ti-pill" style="font-size:36px;color:var(--amber)"></i>
+          <div style="font-size:13px;font-weight:700;color:var(--amber-text)">服薬管理</div>
+          <div><span class="sv" style="font-size:20px" id="stD">0</span><span class="su"> / <span id="stT">0</span></span></div>
+        </button>
       </div>
+      <div class="pb" style="margin-bottom:12px"><div class="pf" id="stB" style="width:0%"></div></div>
+
       <div class="slbl">今日の服薬</div>
       <div class="card"><div id="MHL"><div style="color:var(--text2);font-size:13px;padding:8px 0">薬が登録されていません</div></div></div>
       <div class="slbl">次回通院</div>
@@ -483,7 +503,7 @@ function clrData(){localStorage.removeItem(SK);localStorage.removeItem(SK+'_s');
 
 function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return h.toString(36);}
 function toggleEye(i,c){const e=document.getElementById(i);const ic=document.getElementById(c);e.type=e.type==='password'?'text':'password';ic.className='ti ti-eye'+(e.type==='text'?'-off':'');}
-function doSetup(){const p1=document.getElementById('sp1').value,p2=document.getElementById('sp2').value;if(!p1){document.getElementById('sErr').textContent='パスワードを入力してください';return;}if(p1!==p2){document.getElementById('sErr').textContent='パスワードが一致しません';return;}S.pw=hash(p1);S.al=true;save();document.getElementById('SS').style.display='none';document.getElementById('MA').style.display='flex';init();}
+function doSetup(){const p1=document.getElementById('sp1').value;if(!p1){document.getElementById('sErr').textContent='パスワードを入力してください';return;}S.pw=hash(p1);S.al=true;save();document.getElementById('SS').style.display='none';document.getElementById('MA').style.display='flex';init();}
 function doLogin(){if(S.lu&&Date.now()<S.lu)return;const pw=document.getElementById('lp').value;if(hash(pw)===S.pw){S.att=0;S.al=true;save();document.getElementById('lp').value='';document.getElementById('lErr').textContent='';document.getElementById('aInfo').textContent='';document.getElementById('LS').style.display='none';document.getElementById('MA').style.display='flex';init();}else{S.att++;const r=5-S.att;if(S.att>=5){S.lu=Date.now()+30000;S.att=0;showLO();}else{document.getElementById('lErr').textContent='パスワードが違います';document.getElementById('aInfo').textContent='残り'+r+'回で一時ロック';}document.getElementById('lp').value='';}}
 function showLO(){document.getElementById('LOB').style.display='block';document.getElementById('LB').style.display='none';if(lkTmr)clearInterval(lkTmr);lkTmr=setInterval(()=>{const r=Math.ceil((S.lu-Date.now())/1000);if(r<=0){clearInterval(lkTmr);document.getElementById('LOB').style.display='none';document.getElementById('LB').style.display='flex';document.getElementById('lErr').textContent='';document.getElementById('aInfo').textContent='';}else document.getElementById('CD').textContent=r;},500);}
 function lockApp(){S.al=false;save();document.getElementById('MA').style.display='none';document.getElementById('LS').style.display='flex';document.getElementById('lp').value='';}
@@ -499,7 +519,7 @@ function init(){renderHome();renderCal();renderBP();renderLabRecs();renderDX();}
 function renderDX(){if(!S.dxDate){document.getElementById('DXD').textContent='未設定';document.getElementById('DXS').textContent='';return;}const d=new Date(S.dxDate+'T12:00:00');document.getElementById('DXD').textContent=d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日（'+DY[d.getDay()]+'）';const diff=Math.ceil((d-new Date())/(86400000));if(diff>0)document.getElementById('DXS').textContent='あと'+diff+'日';else if(diff===0)document.getElementById('DXS').textContent='今日です！';else document.getElementById('DXS').textContent=Math.abs(diff)+'日前';}
 function saveDX(){const v=document.getElementById('dxIn').value;if(!v)return;S.dxDate=v;save();closeM('DXM');renderDX();renderHome();}
 
-function renderHome(){const today=dk(new Date());let rows='',done=0,total=0;['朝','昼','夕','就寝前'].forEach(t=>{S.meds.forEach(m=>{if(!m.times.includes(t))return;const k=today+'_'+m.id+'_'+t,chk=S.chk[k];if(chk)done++;total++;rows+=`<div class="mr"><div class="cc${chk?' on':''}" onclick="togChk(${m.id},'${t}')">${chk?'<i class="ti ti-check" style="font-size:13px"></i>':''}</div><div class="mi"><div class="mn">${m.name}</div><div class="ms">${m.dose||''} ${m.note||''}</div></div><span class="badge ${chk?'bg':'ba'}">${t}</span></div>`;});});document.getElementById('MHL').innerHTML=rows||'<div style="color:var(--text2);font-size:13px;padding:8px 0">薬が登録されていません</div>';document.getElementById('stD').textContent=done;document.getElementById('stT').textContent=total;document.getElementById('stB').style.width=total>0?Math.round(done/total*100)+'%':'0%';const tb=S.bpR.filter(r=>r.date===today);if(tb.length>0){const l=tb[tb.length-1];const c=bpCat(l.sys,l.dia);document.getElementById('bpH').innerHTML=`<div style="display:flex;align-items:baseline;gap:2px;margin-top:2px"><span style="font-size:20px;font-weight:700;color:${c.color}">${l.sys}</span><span style="font-size:12px;color:var(--text2)">/</span><span style="font-size:17px;font-weight:700;color:${c.color}">${l.dia}</span><span style="font-size:10px;color:var(--text2);margin-left:2px">mmHg</span></div><span class="badge" style="background:${c.bg};color:${c.color};display:inline-flex;margin-top:2px">${c.label}</span>`;}else document.getElementById('bpH').innerHTML='<div style="color:var(--text2);font-size:13px;margin-top:3px">未記録</div>';const fv=[];Object.entries(S.evts).forEach(([d,ev])=>{if(d>today)ev.filter(e=>e.type==='visit').forEach(e=>fv.push({d,e}));});fv.sort((a,b)=>a.d.localeCompare(b.d));if(fv.length>0){const f=fv[0];const d2=new Date(f.d+'T12:00:00');document.getElementById('NV').innerHTML=`<div class="ei"><div class="edot" style="background:var(--blue)"></div><div class="elbl">${f.e.title}</div><div style="font-size:11px;color:var(--text2)">${d2.getMonth()+1}/${d2.getDate()}</div></div>`;}else document.getElementById('NV').innerHTML='<div style="color:var(--text2);font-size:13px">通院予定なし</div>';renderDX();}
+function renderHome(){const today=dk(new Date());let rows='',done=0,total=0;['朝','昼','夕','就寝前'].forEach(t=>{S.meds.forEach(m=>{if(!m.times.includes(t))return;const k=today+'_'+m.id+'_'+t,chk=S.chk[k];if(chk)done++;total++;rows+=`<div class="mr"><div class="cc${chk?' on':''}" onclick="togChk(${m.id},'${t}')">${chk?'<i class="ti ti-check" style="font-size:13px"></i>':''}</div><div class="mi"><div class="mn">${m.name}</div><div class="ms">${m.dose||''} ${m.note||''}</div></div><span class="badge ${chk?'bg':'ba'}">${t}</span></div>`;});});document.getElementById('MHL').innerHTML=rows||'<div style="color:var(--text2);font-size:13px;padding:8px 0">薬が登録されていません</div>';document.getElementById('stD').textContent=done;document.getElementById('stT').textContent=total;document.getElementById('stB').style.width=total>0?Math.round(done/total*100)+'%':'0%';const tb=S.bpR.filter(r=>r.date===today);if(tb.length>0){const l=tb[tb.length-1];const c=bpCat(l.sys,l.dia);document.getElementById('bpH').innerHTML=`<span style="font-size:15px;font-weight:700;color:${c.color}">${l.sys}/${l.dia}</span><span class="badge" style="background:${c.bg};color:${c.color};display:inline-flex;margin-left:4px;font-size:10px">${c.label}</span>`;}else document.getElementById('bpH').innerHTML='<span style="color:var(--text2);font-size:12px">未記録</span>';const fv=[];Object.entries(S.evts).forEach(([d,ev])=>{if(d>today)ev.filter(e=>e.type==='visit').forEach(e=>fv.push({d,e}));});fv.sort((a,b)=>a.d.localeCompare(b.d));if(fv.length>0){const f=fv[0];const d2=new Date(f.d+'T12:00:00');document.getElementById('NV').innerHTML=`<div class="ei"><div class="edot" style="background:var(--blue)"></div><div class="elbl">${f.e.title}</div><div style="font-size:11px;color:var(--text2)">${d2.getMonth()+1}/${d2.getDate()}</div></div>`;}else document.getElementById('NV').innerHTML='<div style="color:var(--text2);font-size:13px">通院予定なし</div>';try{document.getElementById('NVS').textContent=fv.length>0?(()=>{const f=fv[0];const d2=new Date(f.d+'T12:00:00');return(d2.getMonth()+1)+'/'+d2.getDate();})():'通院予定なし';}catch(e){}renderDX();}
 function togChk(mid,t){const k=dk(new Date())+'_'+mid+'_'+t;S.chk[k]=!S.chk[k];save();renderHome();}
 function addMed(){const name=document.getElementById('mNm').value.trim();if(!name)return;S.meds.push({id:Date.now(),name,dose:document.getElementById('mDs').value.trim(),times:[...S.sTags],note:document.getElementById('mNt').value.trim()});S.sTags=[];document.querySelectorAll('.tag').forEach(t=>t.classList.remove('on'));['mNm','mDs','mNt'].forEach(id=>document.getElementById(id).value='');save();closeM('MM');renderHome();}
 
