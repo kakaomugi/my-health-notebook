@@ -204,10 +204,10 @@ canvas#ec{display:block;width:100%;cursor:crosshair}
 </div>
 
 <div class="app" id="MA" style="display:none">
-  <div class="hdr">
-    <div class="app-brand">
-      <div class="app-name">My Health <span>Notebook</span></div>
-      <div class="app-owner">Masahide Kobayashi</div>
+  <div class="hdr" style="flex-direction:column;align-items:center;padding:12px 14px 8px">
+    <div style="text-align:center;margin-bottom:6px">
+      <div class="app-name" style="font-size:28px;font-weight:800;letter-spacing:-0.02em">My Health <span>Notebook</span></div>
+      <div class="app-owner" style="font-size:16px;margin-top:2px">Masahide Kobayashi</div>
     </div>
     <div class="hdr-act">
       <button class="ibtn" onclick="openM('MM')"><i class="ti ti-plus"></i> 薬</button>
@@ -226,6 +226,16 @@ canvas#ec{display:block;width:100%;cursor:crosshair}
   <div class="screens">
 
     <div class="scr on" id="scr-home">
+      <!-- Next visit banner -->
+      <div id="NVBanner" style="background:var(--blue-light);border:.5px solid var(--blue);border-radius:10px;padding:8px 12px;margin-bottom:10px;display:flex;align-items:center;gap:8px">
+        <i class="ti ti-building-hospital" style="font-size:22px;color:var(--blue);flex-shrink:0"></i>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;color:var(--blue-text);font-weight:600">次回通院予定</div>
+          <div id="NVS" style="font-size:13px;font-weight:700;color:var(--blue-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">通院予定なし</div>
+        </div>
+        <button onclick="showScr('cal',document.querySelectorAll('.nb')[2])" style="background:var(--blue);border:none;border-radius:6px;color:white;cursor:pointer;padding:5px 10px;font-size:11px;font-family:inherit;flex-shrink:0">予定へ</button>
+      </div>
+
       <div class="dxc" id="DXC">
         <div class="dxt"><i class="ti ti-needle"></i> デュピクセント 次回投薬予定</div>
         <div class="dxd" id="DXD">未設定</div>
@@ -233,26 +243,36 @@ canvas#ec{display:block;width:100%;cursor:crosshair}
         <button onclick="openM('DXM')" style="margin-top:8px;background:none;border:.5px solid var(--green);border-radius:6px;color:var(--green-dark);cursor:pointer;padding:4px 10px;font-size:12px;font-family:inherit"><i class="ti ti-edit"></i> 日付を設定</button>
       </div>
       <!-- Big action buttons -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-        <button onclick="showScr('bp',document.querySelectorAll('.nb')[1])" style="background:var(--green-light);border:1.5px solid var(--green);border-radius:14px;padding:18px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;font-family:inherit">
-          <i class="ti ti-heart-rate-monitor" style="font-size:36px;color:var(--green)"></i>
-          <div style="font-size:13px;font-weight:700;color:var(--green-dark)">血圧を記録</div>
-          <div id="bpH" style="font-size:12px;color:var(--text2);min-height:16px">未記録</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+        <button onclick="showScr('bp',document.querySelectorAll('.nb')[1])" style="background:var(--green-light);border:1.5px solid var(--green);border-radius:14px;padding:14px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;font-family:inherit">
+          <i class="ti ti-heart-rate-monitor" style="font-size:32px;color:var(--green)"></i>
+          <div style="font-size:12px;font-weight:700;color:var(--green-dark);text-align:center">血圧を記録</div>
+          <div id="bpH" style="font-size:11px;color:var(--text2);min-height:14px;text-align:center">未記録</div>
         </button>
-        <button onclick="showScr('cal',document.querySelectorAll('.nb')[2])" style="background:var(--blue-light);border:1.5px solid var(--blue);border-radius:14px;padding:18px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;font-family:inherit">
-          <i class="ti ti-calendar-plus" style="font-size:36px;color:var(--blue)"></i>
-          <div style="font-size:13px;font-weight:700;color:var(--blue-text)">予定を追加</div>
-          <div id="NVS" style="font-size:12px;color:var(--text2);min-height:16px">通院予定なし</div>
+        <button onclick="showScr('lab',document.querySelectorAll('.nb')[3])" style="background:#F0EEFB;border:1.5px solid #7F77DD;border-radius:14px;padding:14px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;font-family:inherit">
+          <i class="ti ti-scan" style="font-size:32px;color:#7F77DD"></i>
+          <div style="font-size:12px;font-weight:700;color:#5048A8;text-align:center">検査結果</div>
+          <div style="font-size:11px;color:var(--text2);text-align:center">スキャン</div>
         </button>
-        <button onclick="showScr('lab',document.querySelectorAll('.nb')[3])" style="background:#F0EEFB;border:1.5px solid #7F77DD;border-radius:14px;padding:18px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;font-family:inherit">
-          <i class="ti ti-scan" style="font-size:36px;color:#7F77DD"></i>
-          <div style="font-size:13px;font-weight:700;color:#5048A8">検査結果</div>
-          <div style="font-size:12px;color:var(--text2)">スキャン</div>
+        <button onclick="showScr('photo',document.querySelectorAll('.nb')[5])" style="background:#FDF0FA;border:1.5px solid #C06BAB;border-radius:14px;padding:14px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;font-family:inherit">
+          <i class="ti ti-camera" style="font-size:32px;color:#C06BAB"></i>
+          <div style="font-size:12px;font-weight:700;color:#8B3A7A;text-align:center">皮膚写真</div>
+          <div style="font-size:11px;color:var(--text2);text-align:center">記録</div>
         </button>
-        <button onclick="openM('MM')" style="background:var(--amber-light);border:1.5px solid var(--amber);border-radius:14px;padding:18px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;font-family:inherit">
-          <i class="ti ti-pill" style="font-size:36px;color:var(--amber)"></i>
-          <div style="font-size:13px;font-weight:700;color:var(--amber-text)">服薬管理</div>
-          <div><span class="sv" style="font-size:20px" id="stD">0</span><span class="su"> / <span id="stT">0</span></span></div>
+        <button onclick="openM('MM')" style="background:var(--amber-light);border:1.5px solid var(--amber);border-radius:14px;padding:14px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;font-family:inherit">
+          <i class="ti ti-pill" style="font-size:32px;color:var(--amber)"></i>
+          <div style="font-size:12px;font-weight:700;color:var(--amber-text);text-align:center">服薬管理</div>
+          <div><span style="font-size:18px;font-weight:700" id="stD">0</span><span style="font-size:11px;color:var(--text2)"> / <span id="stT">0</span></span></div>
+        </button>
+        <button onclick="showScr('rec',document.querySelectorAll('.nb')[4])" style="background:var(--blue-light);border:1.5px solid var(--blue);border-radius:14px;padding:14px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;font-family:inherit">
+          <i class="ti ti-receipt" style="font-size:32px;color:var(--blue)"></i>
+          <div style="font-size:12px;font-weight:700;color:var(--blue-text);text-align:center">領収書</div>
+          <div style="font-size:11px;color:var(--text2);text-align:center">管理</div>
+        </button>
+        <button onclick="showScr('cal',document.querySelectorAll('.nb')[2])" style="background:var(--green-light);border:1.5px solid var(--green);border-radius:14px;padding:14px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;font-family:inherit">
+          <i class="ti ti-calendar" style="font-size:32px;color:var(--green)"></i>
+          <div style="font-size:12px;font-weight:700;color:var(--green-dark);text-align:center">カレンダー</div>
+          <div style="font-size:11px;color:var(--text2);text-align:center">予定</div>
         </button>
       </div>
       <div class="pb" style="margin-bottom:12px"><div class="pf" id="stB" style="width:0%"></div></div>
@@ -519,7 +539,18 @@ function init(){renderHome();renderCal();renderBP();renderLabRecs();renderDX();}
 function renderDX(){if(!S.dxDate){document.getElementById('DXD').textContent='未設定';document.getElementById('DXS').textContent='';return;}const d=new Date(S.dxDate+'T12:00:00');document.getElementById('DXD').textContent=d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日（'+DY[d.getDay()]+'）';const diff=Math.ceil((d-new Date())/(86400000));if(diff>0)document.getElementById('DXS').textContent='あと'+diff+'日';else if(diff===0)document.getElementById('DXS').textContent='今日です！';else document.getElementById('DXS').textContent=Math.abs(diff)+'日前';}
 function saveDX(){const v=document.getElementById('dxIn').value;if(!v)return;S.dxDate=v;save();closeM('DXM');renderDX();renderHome();}
 
-function renderHome(){const today=dk(new Date());let rows='',done=0,total=0;['朝','昼','夕','就寝前'].forEach(t=>{S.meds.forEach(m=>{if(!m.times.includes(t))return;const k=today+'_'+m.id+'_'+t,chk=S.chk[k];if(chk)done++;total++;rows+=`<div class="mr"><div class="cc${chk?' on':''}" onclick="togChk(${m.id},'${t}')">${chk?'<i class="ti ti-check" style="font-size:13px"></i>':''}</div><div class="mi"><div class="mn">${m.name}</div><div class="ms">${m.dose||''} ${m.note||''}</div></div><span class="badge ${chk?'bg':'ba'}">${t}</span></div>`;});});document.getElementById('MHL').innerHTML=rows||'<div style="color:var(--text2);font-size:13px;padding:8px 0">薬が登録されていません</div>';document.getElementById('stD').textContent=done;document.getElementById('stT').textContent=total;document.getElementById('stB').style.width=total>0?Math.round(done/total*100)+'%':'0%';const tb=S.bpR.filter(r=>r.date===today);if(tb.length>0){const l=tb[tb.length-1];const c=bpCat(l.sys,l.dia);document.getElementById('bpH').innerHTML=`<span style="font-size:15px;font-weight:700;color:${c.color}">${l.sys}/${l.dia}</span><span class="badge" style="background:${c.bg};color:${c.color};display:inline-flex;margin-left:4px;font-size:10px">${c.label}</span>`;}else document.getElementById('bpH').innerHTML='<span style="color:var(--text2);font-size:12px">未記録</span>';const fv=[];Object.entries(S.evts).forEach(([d,ev])=>{if(d>today)ev.filter(e=>e.type==='visit').forEach(e=>fv.push({d,e}));});fv.sort((a,b)=>a.d.localeCompare(b.d));if(fv.length>0){const f=fv[0];const d2=new Date(f.d+'T12:00:00');document.getElementById('NV').innerHTML=`<div class="ei"><div class="edot" style="background:var(--blue)"></div><div class="elbl">${f.e.title}</div><div style="font-size:11px;color:var(--text2)">${d2.getMonth()+1}/${d2.getDate()}</div></div>`;}else document.getElementById('NV').innerHTML='<div style="color:var(--text2);font-size:13px">通院予定なし</div>';try{document.getElementById('NVS').textContent=fv.length>0?(()=>{const f=fv[0];const d2=new Date(f.d+'T12:00:00');return(d2.getMonth()+1)+'/'+d2.getDate();})():'通院予定なし';}catch(e){}renderDX();}
+function renderHome(){const today=dk(new Date());let rows='',done=0,total=0;['朝','昼','夕','就寝前'].forEach(t=>{S.meds.forEach(m=>{if(!m.times.includes(t))return;const k=today+'_'+m.id+'_'+t,chk=S.chk[k];if(chk)done++;total++;rows+=`<div class="mr"><div class="cc${chk?' on':''}" onclick="togChk(${m.id},'${t}')">${chk?'<i class="ti ti-check" style="font-size:13px"></i>':''}</div><div class="mi"><div class="mn">${m.name}</div><div class="ms">${m.dose||''} ${m.note||''}</div></div><span class="badge ${chk?'bg':'ba'}">${t}</span></div>`;});});document.getElementById('MHL').innerHTML=rows||'<div style="color:var(--text2);font-size:13px;padding:8px 0">薬が登録されていません</div>';document.getElementById('stD').textContent=done;document.getElementById('stT').textContent=total;document.getElementById('stB').style.width=total>0?Math.round(done/total*100)+'%':'0%';const tb=S.bpR.filter(r=>r.date===today);if(tb.length>0){const l=tb[tb.length-1];const c=bpCat(l.sys,l.dia);document.getElementById('bpH').innerHTML=`<span style="font-size:15px;font-weight:700;color:${c.color}">${l.sys}/${l.dia}</span><span class="badge" style="background:${c.bg};color:${c.color};display:inline-flex;margin-left:4px;font-size:10px">${c.label}</span>`;}else document.getElementById('bpH').innerHTML='<span style="color:var(--text2);font-size:12px">未記録</span>';const fv=[];Object.entries(S.evts).forEach(([d,ev])=>{if(d>today)ev.filter(e=>e.type==='visit').forEach(e=>fv.push({d,e}));});fv.sort((a,b)=>a.d.localeCompare(b.d));if(fv.length>0){const f=fv[0];const d2=new Date(f.d+'T12:00:00');document.getElementById('NV').innerHTML=`<div class="ei"><div class="edot" style="background:var(--blue)"></div><div class="elbl">${f.e.title}</div><div style="font-size:11px;color:var(--text2)">${d2.getMonth()+1}/${d2.getDate()}</div></div>`;}else document.getElementById('NV').innerHTML='<div style="color:var(--text2);font-size:13px">通院予定なし</div>';try{
+  if(fv.length>0){
+    const f=fv[0];const d2=new Date(f.d+'T12:00:00');
+    const diff=Math.ceil((d2-new Date())/86400000);
+    const diffTxt=diff===0?'今日！':diff===1?'明日':diff+'日後';
+    document.getElementById('NVS').textContent=d2.getFullYear()+'年'+(d2.getMonth()+1)+'月'+d2.getDate()+'日';
+    document.getElementById('NVDays').textContent=f.e.title+'　'+diffTxt;
+  }else{
+    document.getElementById('NVS').textContent='通院予定なし';
+    document.getElementById('NVDays').textContent='';
+  }
+}catch(e){}renderDX();}
 function togChk(mid,t){const k=dk(new Date())+'_'+mid+'_'+t;S.chk[k]=!S.chk[k];save();renderHome();}
 function addMed(){const name=document.getElementById('mNm').value.trim();if(!name)return;S.meds.push({id:Date.now(),name,dose:document.getElementById('mDs').value.trim(),times:[...S.sTags],note:document.getElementById('mNt').value.trim()});S.sTags=[];document.querySelectorAll('.tag').forEach(t=>t.classList.remove('on'));['mNm','mDs','mNt'].forEach(id=>document.getElementById(id).value='');save();closeM('MM');renderHome();}
 
