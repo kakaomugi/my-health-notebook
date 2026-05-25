@@ -414,9 +414,13 @@ canvas#ec{display:block;width:100%;cursor:crosshair}
     </div>
 
     <div class="scr" id="scr-photo">
-      <div class="slbl">皮膚写真（撮影日付き）</div>
-      <div class="pg" id="SG"><div class="pc add" onclick="document.getElementById('sI').click()"><i class="ti ti-camera-plus"></i></div></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button class="btn bp bsm" onclick="document.getElementById('sI').click()" style="flex:1"><i class="ti ti-camera"></i> 撮影</button>
+        <button class="btn bsm" onclick="document.getElementById('sIG').click()" style="flex:1;border-color:var(--blue);color:var(--blue-text)"><i class="ti ti-photo"></i> カメラロールから追加</button>
+      </div>
       <input type="file" id="sI" accept="image/*" capture="environment" style="display:none" onchange="addSkin(this)">
+      <input type="file" id="sIG" accept="image/*" multiple style="display:none" onchange="addSkinGallery(this)">
+      <div class="pg" id="SG"></div>
       <div class="slbl" style="margin-top:16px">撮影記録</div>
       <div class="card" id="SL"><div style="color:var(--text2);font-size:13px">写真を撮影するとカレンダーに自動記録されます</div></div>
     </div>
@@ -500,6 +504,63 @@ canvas#ec{display:block;width:100%;cursor:crosshair}
     <button class="btn bp" onclick="saveDX()"><i class="ti ti-check"></i> 設定する</button>
   </div>
 </div>
+<div class="mo" id="PVM">
+  <div class="md">
+    <div class="mh"><div class="mt" id="pvmT">皮膚写真</div><button class="mc" onclick="closeM('PVM')"><i class="ti ti-x"></i></button></div>
+    <img id="pvmImg" style="width:100%;border-radius:10px;margin-bottom:10px">
+    <div id="pvmDate" style="font-size:13px;color:var(--text2);margin-bottom:10px"></div>
+    <div class="btn-row" style="display:flex;gap:8px">
+      <button class="btn bd" onclick="delSkinFromViewer()" style="flex:1"><i class="ti ti-trash"></i> 削除</button>
+      <button class="btn" onclick="saveSkinToGallery()" style="flex:1;border-color:var(--green);color:var(--green-dark)"><i class="ti ti-download"></i> カメラロールに保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="mo" id="BPEditM">
+  <div class="md">
+    <div class="mh"><div class="mt" id="bpEditT">血圧を編集</div><button class="mc" onclick="closeM('BPEditM')"><i class="ti ti-x"></i></button></div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:10px" id="bpEditDateLbl"></div>
+    <div class="bpg" style="margin-bottom:4px">
+      <input type="number" id="bpES" placeholder="収縮期" min="60" max="250" style="text-align:center;margin-bottom:0">
+      <input type="number" id="bpED" placeholder="拡張期" min="40" max="160" style="text-align:center;margin-bottom:0">
+      <input type="number" id="bpEP" placeholder="脈拍" min="30" max="200" style="text-align:center;margin-bottom:0">
+    </div>
+    <div class="bpg" style="margin-bottom:10px">
+      <div style="font-size:10px;color:var(--text2);text-align:center">収縮期 mmHg</div>
+      <div style="font-size:10px;color:var(--text2);text-align:center">拡張期 mmHg</div>
+      <div style="font-size:10px;color:var(--text2);text-align:center">脈拍 bpm</div>
+    </div>
+    <select id="bpET" style="margin-bottom:8px"><option value="朝">朝（起床後）</option><option value="夜">夜（就寝前）</option><option value="昼">昼</option></select>
+    <input type="text" id="bpEN" placeholder="メモ（任意）">
+    <div style="display:flex;gap:8px">
+      <button class="btn bd" onclick="delBPRecord()" style="flex:1"><i class="ti ti-trash"></i> 削除</button>
+      <button class="btn bp" onclick="saveBPEdit()" style="flex:2"><i class="ti ti-check"></i> 保存する</button>
+    </div>
+  </div>
+</div>
+
+<div class="mo" id="BPAddM">
+  <div class="md">
+    <div class="mh"><div class="mt" id="bpAddT">血圧を入力</div><button class="mc" onclick="closeM('BPAddM')"><i class="ti ti-x"></i></button></div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:10px" id="bpAddDateLbl"></div>
+    <div class="bpg" style="margin-bottom:4px">
+      <input type="number" id="bpAS" placeholder="収縮期" min="60" max="250" style="text-align:center;margin-bottom:0">
+      <input type="number" id="bpAD" placeholder="拡張期" min="40" max="160" style="text-align:center;margin-bottom:0">
+      <input type="number" id="bpAP" placeholder="脈拍" min="30" max="200" style="text-align:center;margin-bottom:0">
+    </div>
+    <div class="bpg" style="margin-bottom:10px">
+      <div style="font-size:10px;color:var(--text2);text-align:center">収縮期 mmHg</div>
+      <div style="font-size:10px;color:var(--text2);text-align:center">拡張期 mmHg</div>
+      <div style="font-size:10px;color:var(--text2);text-align:center">脈拍 bpm</div>
+    </div>
+    <select id="bpAT" style="margin-bottom:8px"><option value="朝">朝（起床後）</option><option value="夜">夜（就寝前）</option><option value="昼">昼</option></select>
+    <input type="text" id="bpAN" placeholder="メモ（任意）">
+    <button class="btn bp" onclick="saveBPAdd()"><i class="ti ti-check"></i> 保存する</button>
+  </div>
+</div>
+
+<input type="file" id="calPhotoInput" accept="image/*" multiple style="display:none" onchange="addSkinFromCal(this)">
+
 <div class="mo" id="DM">
   <div class="md">
     <div class="mh"><div class="mt" id="dmT"><i class="ti ti-notebook" style="color:var(--amber)"></i> 日記メモ</div><button class="mc" onclick="closeM('DM')"><i class="ti ti-x"></i></button></div>
@@ -519,7 +580,67 @@ let lkTmr=null,lDrw=false,lbs=34,lCtx=null,lCv=null,eEK=null,eEI=null;
 function save(){try{const d={pw:S.pw,al:S.al,meds:S.meds,chk:S.chk,evts:S.evts,recs:S.recs,bpR:S.bpR,labR:S.labR,diar:S.diar,dxDate:S.dxDate};localStorage.setItem(SK,JSON.stringify(d));localStorage.setItem(SK+'_s',JSON.stringify(S.skins));}catch(e){}}
 function load(){try{const d=localStorage.getItem(SK);if(d){const p=JSON.parse(d);Object.assign(S,p);}const sk=localStorage.getItem(SK+'_s');if(sk)S.skins=JSON.parse(sk);S.selD=new Date();S.curM=new Date();S.sTags=[];S.lImg=null;S.lMasks=[];S.lCM=[];S.lParsed=null;S.rPhoto=null;S.att=S.att||0;}catch(e){}}
 function expData(){const d={...S,exportDate:new Date().toISOString()};const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='MyHealthNotebook_backup.json';a.click();URL.revokeObjectURL(u);}
-function clrData(){localStorage.removeItem(SK);localStorage.removeItem(SK+'_s');location.reload();}
+function clrData(){localStorage.removeItem(SK);localStorage.removeItem(SK+'_s');location.re// BP edit state
+let bpEditId=null,bpAddDate=null;
+
+function openBPEdit(id){
+  const r=S.bpR.find(r=>r.id===id);if(!r)return;
+  bpEditId=id;
+  const d=r.date.split('-');
+  document.getElementById('bpEditT').textContent='血圧を編集';
+  document.getElementById('bpEditDateLbl').textContent=d[1]+'/'+d[2]+' '+r.time;
+  document.getElementById('bpES').value=r.sys;
+  document.getElementById('bpED').value=r.dia;
+  document.getElementById('bpEP').value=r.pulse||'';
+  document.getElementById('bpET').value=r.time;
+  document.getElementById('bpEN').value=r.note||'';
+  openM('BPEditM');
+}
+function saveBPEdit(){
+  if(!bpEditId)return;
+  const idx=S.bpR.findIndex(r=>r.id===bpEditId);if(idx<0)return;
+  const sys=parseInt(document.getElementById('bpES').value),dia=parseInt(document.getElementById('bpED').value);
+  if(!sys||!dia){alert('収縮期・拡張期を入力してください');return;}
+  const pulse=document.getElementById('bpEP').value?parseInt(document.getElementById('bpEP').value):null;
+  const time=document.getElementById('bpET').value,note=document.getElementById('bpEN').value.trim();
+  const oldDate=S.bpR[idx].date,oldTime=S.bpR[idx].time;
+  S.bpR[idx]={...S.bpR[idx],sys,dia,pulse,time,note};
+  // Update calendar event
+  if(S.evts[oldDate])S.evts[oldDate]=S.evts[oldDate].filter(e=>!(e.type==='bp'&&e.bpT===oldTime));
+  if(!S.evts[oldDate])S.evts[oldDate]=[];
+  S.evts[oldDate].push({type:'bp',title:`血圧 ${sys}/${dia}（${time}）`,time:'',bpT:time});
+  save();closeM('BPEditM');renderBP();renderHome();renderCal();
+}
+function delBPRecord(){
+  if(!bpEditId)return;
+  if(!confirm('この血圧記録を削除しますか？'))return;
+  const r=S.bpR.find(r=>r.id===bpEditId);
+  if(r&&S.evts[r.date])S.evts[r.date]=S.evts[r.date].filter(e=>!(e.type==='bp'&&e.bpT===r.time));
+  S.bpR=S.bpR.filter(r=>r.id!==bpEditId);
+  save();closeM('BPEditM');renderBP();renderHome();renderCal();
+}
+function openBPAdd(dateKey){
+  bpAddDate=dateKey;
+  const p=dateKey.split('-');
+  document.getElementById('bpAddT').textContent='血圧を入力';
+  document.getElementById('bpAddDateLbl').textContent=p[1]+'/'+p[2]+'の血圧を入力';
+  ['bpAS','bpAD','bpAP','bpAN'].forEach(id=>document.getElementById(id).value='');
+  openM('BPAddM');
+}
+function saveBPAdd(){
+  if(!bpAddDate)return;
+  const sys=parseInt(document.getElementById('bpAS').value),dia=parseInt(document.getElementById('bpAD').value);
+  if(!sys||!dia){alert('収縮期・拡張期を入力してください');return;}
+  const pulse=document.getElementById('bpAP').value?parseInt(document.getElementById('bpAP').value):null;
+  const time=document.getElementById('bpAT').value,note=document.getElementById('bpAN').value.trim();
+  S.bpR.push({id:Date.now(),date:bpAddDate,time,sys,dia,pulse,note});
+  if(!S.evts[bpAddDate])S.evts[bpAddDate]=[];
+  S.evts[bpAddDate]=S.evts[bpAddDate].filter(e=>e.bpT!==time);
+  S.evts[bpAddDate].push({type:'bp',title:`血圧 ${sys}/${dia}（${time}）`,time:'',bpT:time});
+  save();closeM('BPAddM');renderBP();renderHome();renderCal();
+}
+
+load();}
 
 function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return h.toString(36);}
 function toggleEye(i,c){const e=document.getElementById(i);const ic=document.getElementById(c);e.type=e.type==='password'?'text':'password';ic.className='ti ti-eye'+(e.type==='text'?'-off':'');}
@@ -556,12 +677,90 @@ function addMed(){const name=document.getElementById('mNm').value.trim();if(!nam
 
 function bpCat(s,d){if(s<120&&d<80)return{label:'正常',color:'var(--green-dark)',bg:'var(--green-light)'};if(s<130&&d<80)return{label:'正常高値',color:'var(--amber-text)',bg:'var(--amber-light)'};if(s<=139||d<=89)return{label:'高値血圧',color:'var(--amber-text)',bg:'var(--amber-light)'};return{label:'高血圧',color:'var(--red-text)',bg:'var(--red-light)'};}
 function saveBP(){const sys=parseInt(document.getElementById('bpS').value),dia=parseInt(document.getElementById('bpD').value);if(!sys||!dia||sys<60||sys>250||dia<40||dia>160){document.getElementById('bpM').style.color='var(--red-text)';document.getElementById('bpM').textContent='正しい値を入力してください';setTimeout(()=>document.getElementById('bpM').textContent='',3000);return;}const pulse=document.getElementById('bpP').value?parseInt(document.getElementById('bpP').value):null;const time=document.getElementById('bpT').value,note=document.getElementById('bpN').value.trim();const d=dk(new Date());S.bpR.push({id:Date.now(),date:d,time,sys,dia,pulse,note});if(!S.evts[d])S.evts[d]=[];S.evts[d]=S.evts[d].filter(e=>e.bpT!==time);S.evts[d].push({type:'bp',title:`血圧 ${sys}/${dia}（${time}）`,time:'',bpT:time});['bpS','bpD','bpP','bpN'].forEach(id=>document.getElementById(id).value='');document.getElementById('bpM').style.color='var(--green)';document.getElementById('bpM').textContent='記録しました';setTimeout(()=>document.getElementById('bpM').textContent='',2500);save();renderBP();renderHome();renderCal();}
-function renderBP(){const today=dk(new Date());const tb=S.bpR.filter(r=>r.date===today);document.getElementById('bpTB').innerHTML=tb.length>0?(()=>{const c=bpCat(tb[tb.length-1].sys,tb[tb.length-1].dia);return`<span class="badge" style="background:${c.bg};color:${c.color}">${c.label}</span>`;})():'';document.getElementById('bpCnt').textContent=S.bpR.length+'件';const sorted=[...S.bpR].sort((a,b)=>b.id-a.id);document.getElementById('bpHist').innerHTML=sorted.length>0?sorted.slice(0,15).map(r=>{const c=bpCat(r.sys,r.dia);const p=r.date.split('-');return`<div class="bpr"><div class="bpd">${p[1]}/${p[2]}<br><span style="font-size:10px">${r.time}</span></div><div class="bpv">${r.sys}/<span style="font-size:12px">${r.dia}</span> <span style="font-size:10px;color:var(--text2)">mmHg</span>${r.pulse?` <span style="font-size:11px;color:var(--text2)">${r.pulse}bpm</span>`:''}</div><div><span class="badge" style="background:${c.bg};color:${c.color}">${c.label}</span></div></div>`;}).join(''):'<div style="color:var(--text2);font-size:13px">記録がありません</div>';drawBPChart();}
+function renderBP(){const today=dk(new Date());const tb=S.bpR.filter(r=>r.date===today);document.getElementById('bpTB').innerHTML=tb.length>0?(()=>{const c=bpCat(tb[tb.length-1].sys,tb[tb.length-1].dia);return`<span class="badge" style="background:${c.bg};color:${c.color}">${c.label}</span>`;})():'';document.getElementById('bpCnt').textContent=S.bpR.length+'件';const sorted=[...S.bpR].sort((a,b)=>b.id-a.id);document.getElementById('bpHist').innerHTML=sorted.length>0?sorted.slice(0,15).map(r=>{const c=bpCat(r.sys,r.dia);const p=r.date.split('-');return`<div class="bpr"><div class="bpd">${p[1]}/${p[2]}<br><span style="font-size:10px">${r.time}</span></div><div class="bpv">${r.sys}/<span style="font-size:12px">${r.dia}</span> <span style="font-size:10px;color:var(--text2)">mmHg</span>${r.pulse?` <span style="font-size:11px;color:var(--text2)">${r.pulse}bpm</span>`:''}</div><span class="badge" style="background:${c.bg};color:${c.color}">${c.label}</span><button class="ebt" onclick="openBPEdit(${r.id})" title="編集"><i class="ti ti-edit" style="color:var(--green-dark)"></i></button></div>`;}).join(''):'<div style="color:var(--text2);font-size:13px">記録がありません</div>';drawBPChart();}
 function drawBPChart(){const cv=document.getElementById('bpCV');if(!cv)return;const ctx=cv.getContext('2d'),dpr=window.devicePixelRatio||1;cv.width=(cv.offsetWidth||300)*dpr;cv.height=110*dpr;ctx.scale(dpr,dpr);const W=cv.offsetWidth||300,H=110;ctx.clearRect(0,0,W,H);const recs=[...S.bpR].sort((a,b)=>a.id-b.id).slice(-14);if(recs.length<2){ctx.fillStyle='#aaa';ctx.font='12px sans-serif';ctx.textAlign='center';ctx.fillText('2件以上記録するとグラフ表示',W/2,H/2);return;}const sv=recs.map(r=>r.sys),dv=recs.map(r=>r.dia);const all=[...sv,...dv],mn=Math.min(...all)-10,mx=Math.max(...all)+10;const pl={l:28,r:8,t:8,b:16},cw=W-pl.l-pl.r,ch=H-pl.t-pl.b;const xs=cw/(recs.length-1),ys=v=>pl.t+ch-(v-mn)/(mx-mn)*ch;ctx.strokeStyle='rgba(226,75,74,.3)';ctx.lineWidth=1;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(pl.l,ys(140));ctx.lineTo(pl.l+cw,ys(140));ctx.stroke();ctx.setLineDash([]);[[sv,'#E24B4A'],[dv,'#378ADD']].forEach(([vals,col])=>{ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();vals.forEach((v,i)=>{i?ctx.lineTo(pl.l+i*xs,ys(v)):ctx.moveTo(pl.l,ys(v));});ctx.stroke();vals.forEach((v,i)=>{ctx.fillStyle=col;ctx.beginPath();ctx.arc(pl.l+i*xs,ys(v),3,0,Math.PI*2);ctx.fill();});});ctx.fillStyle='#888';ctx.font='9px sans-serif';ctx.textAlign='right';[mn,mx].forEach(v=>ctx.fillText(Math.round(v),pl.l-2,ys(v)+3));}
 
 function renderCal(){const cm=S.curM;document.getElementById('calM').textContent=cm.getFullYear()+'年'+MO[cm.getMonth()];document.getElementById('calH').innerHTML=DY.map(d=>`<div class="cgh">${d}</div>`).join('');const first=new Date(cm.getFullYear(),cm.getMonth(),1),last=new Date(cm.getFullYear(),cm.getMonth()+1,0);const today=dk(new Date()),selK=dk(S.selD);let html='';for(let i=0;i<first.getDay();i++){const d=new Date(first);d.setDate(d.getDate()-first.getDay()+i);html+=`<div class="cc2 dim"><span class="cnum">${d.getDate()}</span></div>`;}for(let d=1;d<=last.getDate();d++){const date=new Date(cm.getFullYear(),cm.getMonth(),d),k=dk(date);const isT=k===today,isS=k===selK;const evs=S.evts[k]||[],bpR=S.bpR.filter(r=>r.date===k);const hasO=evs.some(e=>e.type!=='bp');const hasD=S.diar[k]&&S.diar[k].length>0;let inner=`<span class="cnum">${d}</span>`;if(bpR.length>0){const l=bpR[bpR.length-1];const c=bpCat(l.sys,l.dia);inner+=`<span class="cbp" style="background:${c.bg};color:${c.color}">${l.sys}/${l.dia}</span>`;}if(hasO)inner+=`<div class="cdots"><div class="cdot" style="background:var(--red)"></div></div>`;if(hasD)inner+=`<div style="font-size:8px;color:var(--amber-text);line-height:1">✏️</div>`;html+=`<div class="cc2 ${isT?'today':''} ${isS&&!isT?'sel':''}" onclick="selDate('${k}')">${inner}</div>`;}document.getElementById('calB').innerHTML=html;renderDayEvts();renderDiaryView();}
 function selDate(k){const p=k.split('-');S.selD=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));renderCal();}
-function renderDayEvts(){const k=dk(S.selD),d=S.selD;document.getElementById('sdl').textContent=(d.getMonth()+1)+'月'+d.getDate()+'日（'+DY[d.getDay()]+'）';const evs=S.evts[k]||[];const cols={visit:'var(--blue)',med:'var(--green)',other:'var(--gray)',skin:'var(--amber)',bp:'var(--red)',lab:'#7F77DD'};if(evs.length===0){document.getElementById('dEvts').innerHTML='<div style="color:var(--text2);font-size:13px">この日の予定はありません</div>';return;}document.getElementById('dEvts').innerHTML=evs.map((e,i)=>`<div class="ei"><div class="edot" style="background:${cols[e.type]||'var(--gray)'}"></div><div class="elbl">${e.title}${e.time?' '+e.time:''}</div><div class="eact"><button class="ebt" onclick="openEditEvt('${k}',${i})"><i class="ti ti-edit" style="color:var(--green-dark)"></i></button><button class="ebt" onclick="delEvt('${k}',${i})"><i class="ti ti-trash" style="color:var(--red-text)"></i></button></div></div>`).join('');}
+function renderDayEvts(){
+  const k=dk(S.selD),d=S.selD;
+  document.getElementById('sdl').textContent=(d.getMonth()+1)+'月'+d.getDate()+'日（'+DY[d.getDay()]+'）';
+  const evs=S.evts[k]||[];
+  const cols={visit:'var(--blue)',med:'var(--green)',other:'var(--gray)',skin:'var(--amber)',bp:'var(--red)',lab:'#7F77DD'};
+  // Show events with edit/delete
+  let evHtml=evs.length>0?evs.map((e,i)=>{
+    if(e.type==='bp'){
+      const bpR=S.bpR.find(r=>r.date===k&&r.time===e.bpT);
+      return`<div class="ei"><div class="edot" style="background:var(--red)"></div><div class="elbl">${e.title}</div><div class="eact">${bpR?`<button class="ebt" onclick="openBPEdit(${bpR.id})"><i class="ti ti-edit" style="color:var(--green-dark)"></i></button>`:''}<button class="ebt" onclick="delEvt('${k}',${i})"><i class="ti ti-trash" style="color:var(--red-text)"></i></button></div></div>`;
+    }
+    if(e.type==='skin'){
+      const skinR=S.skins.find(s=>s.date===k&&s.tm===e.time);
+      const skinIdx=skinR?S.skins.indexOf(skinR):-1;
+      return`<div class="ei"><div class="edot" style="background:var(--amber)"></div><div class="elbl">${e.title} ${e.time||''}</div><div class="eact">${skinIdx>=0?`<button class="ebt" onclick="openPhotoViewer(${skinIdx})"><i class="ti ti-eye" style="color:var(--blue-text)"></i></button>`:''}<button class="ebt" onclick="delEvt('${k}',${i})"><i class="ti ti-trash" style="color:var(--red-text)"></i></button></div></div>`;
+    }
+    return`<div class="ei"><div class="edot" style="background:${cols[e.type]||'var(--gray)'}"></div><div class="elbl">${e.title}${e.time?' '+e.time:''}</div><div class="eact"><button class="ebt" onclick="openEditEvt('${k}',${i})"><i class="ti ti-edit" style="color:var(--green-dark)"></i></button><button class="ebt" onclick="delEvt('${k}',${i})"><i class="ti ti-trash" style="color:var(--red-text)"></i></button></div></div>`;
+  }).join(''):'<div style="color:var(--text2);font-size:13px">この日の予定はありません</div>';
+
+  // Show skin photos for this day
+  const dayPhotos=S.skins.filter(s=>s.date===k);
+  let photoHtml='';
+  if(dayPhotos.length>0){
+    photoHtml=`<div style="margin-top:10px"><div style="font-size:11px;font-weight:600;color:var(--amber-text);margin-bottom:6px"><i class="ti ti-camera"></i> 皮膚写真（${dayPhotos.length}枚）</div><div style="display:flex;gap:6px;flex-wrap:wrap">`;
+    dayPhotos.forEach(p=>{
+      const idx=S.skins.indexOf(p);
+      photoHtml+=`<div onclick="openPhotoViewer(${idx})" style="width:72px;height:72px;border-radius:8px;overflow:hidden;cursor:pointer;border:.5px solid var(--border)"><img src="${p.src}" style="width:100%;height:100%;object-fit:cover"></div>`;
+    });
+    photoHtml+='</div></div>';
+  }
+
+  // Add BP button and Photo button for this day
+  const actionBtns=`<div style="display:flex;gap:8px;margin-top:8px">
+    <button onclick="openBPAdd('${k}')" style="flex:1;padding:8px;background:var(--red-light);border:.5px solid var(--red);border-radius:8px;color:var(--red-text);cursor:pointer;font-size:12px;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px"><i class="ti ti-heart-rate-monitor"></i> 血圧を入力</button>
+    <button onclick="openCalPhoto('${k}')" style="flex:1;padding:8px;background:#FDF0FA;border:.5px solid #C06BAB;border-radius:8px;color:#8B3A7A;cursor:pointer;font-size:12px;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px"><i class="ti ti-camera"></i> 写真を追加</button>
+  </div>`;
+
+  document.getElementById('dEvts').innerHTML=evHtml+photoHtml+actionBtns;
+}
+
+// Calendar photo add
+let calPhotoDate=null;
+function openCalPhoto(dateKey){
+  calPhotoDate=dateKey;
+  document.getElementById('calPhotoInput').click();
+}
+function addSkinFromCal(input){
+  const files=Array.from(input.files);if(!files.length)return;
+  let processed=0;
+  files.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const canvas=document.createElement('canvas');
+        const MAX=400;let w=img.width,h=img.height;
+        if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        const compressed=canvas.toDataURL('image/jpeg',0.5);
+        const dateKey=calPhotoDate||dk(new Date());
+        const p=dateKey.split('-');
+        const ds=p[1]+'/'+p[2];
+        const now=new Date();
+        const tm=now.getHours()+':'+now.getMinutes().toString().padStart(2,'0');
+        try{
+          S.skins.push({src:compressed,date:dateKey,ds,tm});
+          if(!S.evts[dateKey])S.evts[dateKey]=[];
+          S.evts[dateKey].push({type:'skin',title:'皮膚写真',time:tm});
+          processed++;
+          if(processed===files.length){save();renderSkin();renderCal();}
+        }catch(err){console.warn('Storage error',err);}
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value='';
+}
 function openEditEvt(k,i){eEK=k;eEI=i;const e=S.evts[k][i];document.getElementById('eeTy').value=e.type;document.getElementById('eeTi').value=e.title;document.getElementById('eeTm').value=e.time||'';document.getElementById('eeNt').value=e.note||'';openM('EEM');}
 function saveEditEvt(){if(eEK===null||eEI===null)return;S.evts[eEK][eEI]={type:document.getElementById('eeTy').value,title:document.getElementById('eeTi').value.trim(),time:document.getElementById('eeTm').value,note:document.getElementById('eeNt').value.trim()};save();closeM('EEM');renderCal();renderHome();}
 function delEvt(k,i){if(!confirm('この予定を削除しますか？'))return;S.evts[k].splice(i,1);if(S.evts[k].length===0)delete S.evts[k];save();renderCal();renderHome();}
@@ -592,8 +791,176 @@ function renderRec(filter='all'){const list=S.recs.filter(r=>filter==='all'||r.t
 function prevRec(input){const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{S.rPhoto=e.target.result;document.getElementById('rPv').innerHTML=`<img src="${e.target.result}" style="width:100%;border-radius:8px;margin-bottom:8px">`;};reader.readAsDataURL(file);}
 function addRec(){const name=document.getElementById('rNm').value.trim();if(!name)return;const date=document.getElementById('rDt').value;S.recs.push({type:document.getElementById('rTy').value,name,date,amt:document.getElementById('rAm').value,note:document.getElementById('rNt').value.trim(),photo:S.rPhoto});if(date){if(!S.evts[date])S.evts[date]=[];S.evts[date].push({type:'visit',title:name+'（領収書）',time:''});}S.rPhoto=null;['rNm','rDt','rAm','rNt'].forEach(id=>document.getElementById(id).value='');document.getElementById('rPv').innerHTML='';save();closeM('RM');renderRec('all');renderHome();}
 
-function addSkin(input){const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{const now=new Date(),k=dk(now),ds=(now.getMonth()+1)+'/'+now.getDate(),tm=now.getHours()+':'+now.getMinutes().toString().padStart(2,'0');S.skins.push({src:e.target.result,date:k,ds,tm});if(!S.evts[k])S.evts[k]=[];S.evts[k].push({type:'skin',title:'皮膚写真撮影',time:tm});save();renderSkin();};reader.readAsDataURL(file);input.value='';}
-function renderSkin(){let html=`<div class="pc add" onclick="document.getElementById('sI').click()"><i class="ti ti-camera-plus"></i></div>`;[...S.skins].reverse().forEach(p=>{html+=`<div class="pc"><img src="${p.src}" loading="lazy"><div class="plbl">${p.ds} ${p.tm}</div></div>`;});document.getElementById('SG').innerHTML=html;document.getElementById('SL').innerHTML=S.skins.length>0?[...S.skins].reverse().map(p=>`<div class="ei"><div class="edot" style="background:var(--amber)"></div><div class="elbl">皮膚写真</div><div style="font-size:11px;color:var(--text2)">${p.ds} ${p.tm}</div></div>`).join(''):'<div style="color:var(--text2);font-size:13px">写真を撮影するとカレンダーに自動記録されます</div>';}
+function addSkin(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    // Compress image using canvas
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      // Max 400px width/height to save storage
+      const MAX=400;
+      let w=img.width,h=img.height;
+      if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}
+      else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
+      canvas.width=w;canvas.height=h;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      // Compress to JPEG quality 0.5
+      const compressed=canvas.toDataURL('image/jpeg',0.5);
+      const now=new Date(),k=dk(now),ds=(now.getMonth()+1)+'/'+now.getDate(),tm=now.getHours()+':'+now.getMinutes().toString().padStart(2,'0');
+      // Check storage space before saving
+      try{
+        S.skins.push({src:compressed,date:k,ds,tm});
+        if(!S.evts[k])S.evts[k]=[];
+        S.evts[k].push({type:'skin',title:'皮膚写真撮影',time:tm});
+        save();renderSkin();
+      }catch(err){
+        // If storage full, remove oldest photo and retry
+        if(S.skins.length>1){
+          S.skins.shift();
+          S.skins.push({src:compressed,date:k,ds,tm});
+          try{save();renderSkin();alert('古い写真1枚を削除して保存しました');}
+          catch(e){alert('ストレージが不足しています。設定から古いデータを削除してください。');}
+        }
+      }
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);input.value='';
+}
+function addSkinGallery(input){
+  const files=Array.from(input.files);if(!files.length)return;
+  let processed=0;
+  files.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const canvas=document.createElement('canvas');
+        const MAX=400;let w=img.width,h=img.height;
+        if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        const compressed=canvas.toDataURL('image/jpeg',0.5);
+        // Use file last modified date if available
+        const fileDate=file.lastModified?new Date(file.lastModified):new Date();
+        const k=dk(fileDate),ds=(fileDate.getMonth()+1)+'/'+fileDate.getDate(),tm=fileDate.getHours()+':'+fileDate.getMinutes().toString().padStart(2,'0');
+        try{
+          S.skins.push({src:compressed,date:k,ds,tm});
+          if(!S.evts[k])S.evts[k]=[];
+          S.evts[k].push({type:'skin',title:'皮膚写真',time:tm});
+          processed++;
+          if(processed===files.length){save();renderSkin();renderCal();}
+        }catch(err){console.warn('Storage error',err);}
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value='';
+}
+function renderSkin(){
+  const sorted=[...S.skins].reverse();
+  let html='';
+  sorted.forEach((p,i)=>{
+    const realIdx=S.skins.length-1-i;
+    html+=`<div class="pc" onclick="openPhotoViewer(${realIdx})"><img src="${p.src}" loading="lazy"><div class="plbl">${p.ds} ${p.tm}</div></div>`;
+  });
+  document.getElementById('SG').innerHTML=html;
+  document.getElementById('SL').innerHTML=S.skins.length>0?sorted.map((p,i)=>{
+    const realIdx=S.skins.length-1-i;
+    return`<div class="ei"><div class="edot" style="background:var(--amber)"></div><div class="elbl">皮膚写真 ${p.ds} ${p.tm}</div><div class="eact"><button class="ebt" onclick="openPhotoViewer(${realIdx})"><i class="ti ti-eye" style="color:var(--blue-text)"></i></button><button class="ebt" onclick="delSkin(${realIdx})"><i class="ti ti-trash" style="color:var(--red-text)"></i></button></div></div>`;
+  }).join(''):'<div style="color:var(--text2);font-size:13px">写真を撮影するとカレンダーに自動記録されます</div>';
+}
+let currentPhotoIdx=null;
+function openPhotoViewer(idx){
+  currentPhotoIdx=idx;
+  const p=S.skins[idx];
+  document.getElementById('pvmImg').src=p.src;
+  document.getElementById('pvmT').textContent='皮膚写真　'+p.ds+' '+p.tm;
+  document.getElementById('pvmDate').textContent='撮影日：'+p.date+'　'+p.tm;
+  openM('PVM');
+}
+function delSkinFromViewer(){
+  if(currentPhotoIdx===null)return;
+  delSkin(currentPhotoIdx);closeM('PVM');
+}
+function saveSkinToGallery(){
+  if(currentPhotoIdx===null)return;
+  const p=S.skins[currentPhotoIdx];
+  const a=document.createElement('a');a.href=p.src;a.download='skin_'+p.date+'_'+p.tm.replace(':','')+'.jpg';a.click();
+}
+function delSkin(idx){
+  if(!confirm('この写真を削除しますか？'))return;
+  const p=S.skins[idx];
+  // Remove from calendar events too
+  const k=p.date;
+  if(S.evts[k]){S.evts[k]=S.evts[k].filter(e=>!(e.type==='skin'&&e.time===p.tm));if(S.evts[k].length===0)delete S.evts[k];}
+  S.skins.splice(idx,1);
+  save();renderSkin();renderCal();
+}
+
+// BP edit state
+let bpEditId=null,bpAddDate=null;
+
+function openBPEdit(id){
+  const r=S.bpR.find(r=>r.id===id);if(!r)return;
+  bpEditId=id;
+  const d=r.date.split('-');
+  document.getElementById('bpEditT').textContent='血圧を編集';
+  document.getElementById('bpEditDateLbl').textContent=d[1]+'/'+d[2]+' '+r.time;
+  document.getElementById('bpES').value=r.sys;
+  document.getElementById('bpED').value=r.dia;
+  document.getElementById('bpEP').value=r.pulse||'';
+  document.getElementById('bpET').value=r.time;
+  document.getElementById('bpEN').value=r.note||'';
+  openM('BPEditM');
+}
+function saveBPEdit(){
+  if(!bpEditId)return;
+  const idx=S.bpR.findIndex(r=>r.id===bpEditId);if(idx<0)return;
+  const sys=parseInt(document.getElementById('bpES').value),dia=parseInt(document.getElementById('bpED').value);
+  if(!sys||!dia){alert('収縮期・拡張期を入力してください');return;}
+  const pulse=document.getElementById('bpEP').value?parseInt(document.getElementById('bpEP').value):null;
+  const time=document.getElementById('bpET').value,note=document.getElementById('bpEN').value.trim();
+  const oldDate=S.bpR[idx].date,oldTime=S.bpR[idx].time;
+  S.bpR[idx]={...S.bpR[idx],sys,dia,pulse,time,note};
+  // Update calendar event
+  if(S.evts[oldDate])S.evts[oldDate]=S.evts[oldDate].filter(e=>!(e.type==='bp'&&e.bpT===oldTime));
+  if(!S.evts[oldDate])S.evts[oldDate]=[];
+  S.evts[oldDate].push({type:'bp',title:`血圧 ${sys}/${dia}（${time}）`,time:'',bpT:time});
+  save();closeM('BPEditM');renderBP();renderHome();renderCal();
+}
+function delBPRecord(){
+  if(!bpEditId)return;
+  if(!confirm('この血圧記録を削除しますか？'))return;
+  const r=S.bpR.find(r=>r.id===bpEditId);
+  if(r&&S.evts[r.date])S.evts[r.date]=S.evts[r.date].filter(e=>!(e.type==='bp'&&e.bpT===r.time));
+  S.bpR=S.bpR.filter(r=>r.id!==bpEditId);
+  save();closeM('BPEditM');renderBP();renderHome();renderCal();
+}
+function openBPAdd(dateKey){
+  bpAddDate=dateKey;
+  const p=dateKey.split('-');
+  document.getElementById('bpAddT').textContent='血圧を入力';
+  document.getElementById('bpAddDateLbl').textContent=p[1]+'/'+p[2]+'の血圧を入力';
+  ['bpAS','bpAD','bpAP','bpAN'].forEach(id=>document.getElementById(id).value='');
+  openM('BPAddM');
+}
+function saveBPAdd(){
+  if(!bpAddDate)return;
+  const sys=parseInt(document.getElementById('bpAS').value),dia=parseInt(document.getElementById('bpAD').value);
+  if(!sys||!dia){alert('収縮期・拡張期を入力してください');return;}
+  const pulse=document.getElementById('bpAP').value?parseInt(document.getElementById('bpAP').value):null;
+  const time=document.getElementById('bpAT').value,note=document.getElementById('bpAN').value.trim();
+  S.bpR.push({id:Date.now(),date:bpAddDate,time,sys,dia,pulse,note});
+  if(!S.evts[bpAddDate])S.evts[bpAddDate]=[];
+  S.evts[bpAddDate]=S.evts[bpAddDate].filter(e=>e.bpT!==time);
+  S.evts[bpAddDate].push({type:'bp',title:`血圧 ${sys}/${dia}（${time}）`,time:'',bpT:time});
+  save();closeM('BPAddM');renderBP();renderHome();renderCal();
+}
 
 load();
 document.getElementById('rDt').valueAsDate=new Date();
