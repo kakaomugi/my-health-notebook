@@ -435,10 +435,11 @@ window.onload = function(){
     </div>
 
     <div class="scr" id="scr-photo">
-      <div style="display:flex;gap:8px;margin-bottom:10px">
+      <div style="display:flex;gap:8px;margin-bottom:6px">
         <button class="btn bp bsm" onclick="document.getElementById('sI').click()" style="flex:1"><i class="ti ti-camera"></i> 撮影</button>
         <button class="btn bsm" onclick="document.getElementById('sIG').click()" style="flex:1;border-color:var(--blue);color:var(--blue-text)"><i class="ti ti-photo"></i> カメラロールから追加</button>
       </div>
+      <button class="btn bsm" onclick="saveAllSkinsToGallery()" style="width:100%;margin-bottom:10px;border-color:#C06BAB;color:#8B3A7A"><i class="ti ti-device-floppy"></i> 全写真をカメラロールに一括保存</button>
       <input type="file" id="sI" accept="image/*" capture="environment" style="display:none" onchange="addSkin(this)">
       <input type="file" id="sIG" accept="image/*" multiple style="display:none" onchange="addSkinGallery(this)">
       <div class="pg" id="SG"></div>
@@ -464,7 +465,13 @@ window.onload = function(){
       </div>
       <div class="card">
         <div class="ct" style="margin-bottom:10px">データ管理</div>
-        <button class="btn" onclick="expData()"><i class="ti ti-download"></i> データをエクスポート</button>
+        <div class="ib ibl" style="margin-bottom:10px">
+          <i class="ti ti-info-circle"></i>
+          <div>エクスポートしたJSONファイルで全データ（写真含む）を別の端末や新しいアプリに移行できます</div>
+        </div>
+        <button class="btn bp" onclick="expData()"><i class="ti ti-upload"></i> データをエクスポート（写真含む）</button>
+        <button class="btn" onclick="document.getElementById('impFile').click()" style="border-color:var(--blue);color:var(--blue-text)"><i class="ti ti-download"></i> データをインポート</button>
+        <input type="file" id="impFile" accept=".json" style="display:none" onchange="impData(this)">
         <button class="btn bd" onclick="if(confirm('全データを削除しますか？'))clrData()"><i class="ti ti-trash"></i> 全データを削除</button>
       </div>
     </div>
@@ -644,7 +651,71 @@ let lkTmr=null,lDrw=false,lbs=34,lCtx=null,lCv=null,eEK=null,eEI=null;
 
 function save(){try{const d={pw:S.pw,al:S.al,meds:S.meds,chk:S.chk,evts:S.evts,recs:S.recs,bpR:S.bpR,labR:S.labR,diar:S.diar,dxDate:S.dxDate};localStorage.setItem(SK,JSON.stringify(d));localStorage.setItem(SK+'_s',JSON.stringify(S.skins));}catch(e){}}
 function load(){try{const d=localStorage.getItem(SK);if(d){const p=JSON.parse(d);Object.assign(S,p);}const sk=localStorage.getItem(SK+'_s');if(sk)S.skins=JSON.parse(sk);S.selD=new Date();S.curM=new Date();S.sTags=[];S.lImg=null;S.lMasks=[];S.lCM=[];S.lParsed=null;S.rPhoto=null;S.att=S.att||0;}catch(e){}}
-function expData(){const d={...S,exportDate:new Date().toISOString()};const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='MyHealthNotebook_backup.json';a.click();URL.revokeObjectURL(u);}
+function expData(){
+  // Include all data including skins
+  const exportData={
+    pw:S.pw,al:S.al,meds:S.meds,chk:S.chk,evts:S.evts,
+    recs:S.recs,bpR:S.bpR,labR:S.labR,diar:S.diar,
+    dxDate:S.dxDate,skins:S.skins,
+    exportDate:new Date().toISOString(),
+    version:'2.0'
+  };
+  const b=new Blob([JSON.stringify(exportData)],{type:'application/json'});
+  const u=URL.createObjectURL(b);
+  const a=document.createElement('a');
+  a.href=u;
+  const dateStr=new Date().toISOString().split('T')[0];
+  a.download='MyHealthNotebook_'+dateStr+'.json';
+  a.click();
+  URL.revokeObjectURL(u);
+  alert('エクスポートが完了しました！\nJSONファイルをiCloud DriveやFilesアプリに保存してください。');
+}
+
+function impData(input){
+  const file=input.files[0];if(!file)return;
+  if(!confirm('現在のデータに上書きインポートしますか？\n（パスワード以外のデータが置き換わります）'))return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      // Import all data except keep current password
+      const currentPw=S.pw;const currentAl=S.al;
+      if(d.meds)S.meds=d.meds;
+      if(d.chk)S.chk=d.chk;
+      if(d.evts)S.evts=d.evts;
+      if(d.recs)S.recs=d.recs;
+      if(d.bpR)S.bpR=d.bpR;
+      if(d.labR)S.labR=d.labR;
+      if(d.diar)S.diar=d.diar;
+      if(d.dxDate)S.dxDate=d.dxDate;
+      if(d.skins)S.skins=d.skins;
+      S.pw=currentPw;S.al=currentAl;
+      save();init();
+      alert('インポートが完了しました！\n写真を含む全データが復元されました。');
+    }catch(err){
+      alert('インポートエラー：ファイルが正しくありません。\n'+err.message);
+    }
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+function saveAllSkinsToGallery(){
+  if(S.skins.length===0){alert('保存する写真がありません');return;}
+  if(!confirm(S.skins.length+'枚の写真をカメラロールに保存しますか？\n1枚ずつ保存ダイアログが表示されます。'))return;
+  let idx=0;
+  function saveNext(){
+    if(idx>=S.skins.length){alert('全'+S.skins.length+'枚の保存が完了しました！');return;}
+    const p=S.skins[idx];
+    const a=document.createElement('a');
+    a.href=p.src;
+    a.download='skin_'+p.date+'_'+(p.tm||'').replace(':','')+'.jpg';
+    a.click();
+    idx++;
+    setTimeout(saveNext,800);
+  }
+  saveNext();
+}
 function clrData(){localStorage.removeItem(SK);localStorage.removeItem(SK+'_s');location.re// BP edit state
 let bpEditId=null,bpAddDate=null;
 
