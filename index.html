@@ -293,12 +293,12 @@ window.onload = function(){
       <div class="slbl">次回通院</div>
       <div class="card" id="NV"><div style="color:var(--text2);font-size:13px">通院予定なし</div></div>
 
-      <div class="slbl">頓服薬</div>
+      <div class="slbl"><i class="ti ti-pill" style="color:var(--amber)"></i> 頓服薬</div>
       <div class="card">
         <div id="PRNL"><div style="color:var(--text2);font-size:13px;padding:8px 0">頓服薬が登録されていません</div></div>
       </div>
 
-      <div class="slbl">服用中の薬リスト</div>
+      <div class="slbl"><i class="ti ti-list" style="color:var(--green)"></i> 服用中の薬リスト</div>
       <div class="card">
         <div id="MEDRL"><div style="color:var(--text2);font-size:13px;padding:8px 0">薬が登録されていません</div></div>
       </div>
@@ -496,10 +496,11 @@ window.onload = function(){
     <div class="tags">
       <span class="tag on" id="mTyp-regular" onclick="setMedType('regular')">定期薬</span>
       <span class="tag" id="mTyp-prn" onclick="setMedType('prn')">頓服</span>
+      <span class="tag" id="mTyp-caution" onclick="setMedType('caution')">💉注射薬</span>
     </div>
     <div id="mTimingWrap">
       <div class="slbl">服用タイミング</div>
-      <div class="tags"><span class="tag" id="t-朝" onclick="togTag('朝')">朝</span><span class="tag" id="t-昼" onclick="togTag('昼')">昼</span><span class="tag" id="t-夕" onclick="togTag('夕')">夕</span><span class="tag" id="t-就寝前" onclick="togTag('就寝前')">就寝前</span></div>
+      <div class="tags"><span class="tag" id="t-朝" onclick="togTag('朝')">朝</span><span class="tag" id="t-朝食後" onclick="togTag('朝食後')">朝食後</span><span class="tag" id="t-昼" onclick="togTag('昼')">昼</span><span class="tag" id="t-昼食後" onclick="togTag('昼食後')">昼食後</span><span class="tag" id="t-夕" onclick="togTag('夕')">夕</span><span class="tag" id="t-夕食後" onclick="togTag('夕食後')">夕食後</span><span class="tag" id="t-就寝前" onclick="togTag('就寝前')">就寝前</span></div>
     </div>
     <input type="text" id="mNt" placeholder="メモ（任意）">
     <button class="btn bp" onclick="addMed()">追加する</button>
@@ -623,13 +624,17 @@ window.onload = function(){
     <div class="tags">
       <span class="tag" id="eMTyp-regular" onclick="setEditMedType('regular')">定期薬</span>
       <span class="tag" id="eMTyp-prn" onclick="setEditMedType('prn')">頓服</span>
+      <span class="tag" id="eMTyp-caution" onclick="setEditMedType('caution')">💉注射薬</span>
     </div>
     <div id="eMTimingWrap">
       <div class="slbl">服用タイミング</div>
       <div class="tags">
         <span class="tag" id="et-朝" onclick="togEditTag('朝')">朝</span>
+        <span class="tag" id="et-朝食後" onclick="togEditTag('朝食後')">朝食後</span>
         <span class="tag" id="et-昼" onclick="togEditTag('昼')">昼</span>
+        <span class="tag" id="et-昼食後" onclick="togEditTag('昼食後')">昼食後</span>
         <span class="tag" id="et-夕" onclick="togEditTag('夕')">夕</span>
+        <span class="tag" id="et-夕食後" onclick="togEditTag('夕食後')">夕食後</span>
         <span class="tag" id="et-就寝前" onclick="togEditTag('就寝前')">就寝前</span>
       </div>
     </div>
@@ -750,171 +755,7 @@ function saveAllSkinsToGallery(){
   }
   saveNext();
 }
-function clrData(){localStorage.removeItem(SK);localStorage.removeItem(SK+'_s');location.re// BP edit state
-let bpEditId=null,bpAddDate=null;
-
-function openBPEdit(id){
-  const r=S.bpR.find(r=>r.id===id);if(!r)return;
-  bpEditId=id;
-  const d=r.date.split('-');
-  document.getElementById('bpEditT').textContent='血圧を編集';
-  document.getElementById('bpEditDateLbl').textContent=d[1]+'/'+d[2]+' '+r.time;
-  document.getElementById('bpES').value=r.sys;
-  document.getElementById('bpED').value=r.dia;
-  document.getElementById('bpEP').value=r.pulse||'';
-  document.getElementById('bpET').value=r.time;
-  document.getElementById('bpEN').value=r.note||'';
-  openM('BPEditM');
-}
-function saveBPEdit(){
-  if(!bpEditId)return;
-  const idx=S.bpR.findIndex(r=>r.id===bpEditId);if(idx<0)return;
-  const sys=parseInt(document.getElementById('bpES').value),dia=parseInt(document.getElementById('bpED').value);
-  if(!sys||!dia){alert('収縮期・拡張期を入力してください');return;}
-  const pulse=document.getElementById('bpEP').value?parseInt(document.getElementById('bpEP').value):null;
-  const time=document.getElementById('bpET').value,note=document.getElementById('bpEN').value.trim();
-  const oldDate=S.bpR[idx].date,oldTime=S.bpR[idx].time;
-  S.bpR[idx]={...S.bpR[idx],sys,dia,pulse,time,note};
-  // Update calendar event
-  if(S.evts[oldDate])S.evts[oldDate]=S.evts[oldDate].filter(e=>!(e.type==='bp'&&e.bpT===oldTime));
-  if(!S.evts[oldDate])S.evts[oldDate]=[];
-  S.evts[oldDate].push({type:'bp',title:`血圧 ${sys}/${dia}（${time}）`,time:'',bpT:time});
-  save();closeM('BPEditM');renderBP();renderHome();renderCal();
-}
-function delBPRecord(){
-  if(!bpEditId)return;
-  if(!confirm('この血圧記録を削除しますか？'))return;
-  const r=S.bpR.find(r=>r.id===bpEditId);
-  if(r&&S.evts[r.date])S.evts[r.date]=S.evts[r.date].filter(e=>!(e.type==='bp'&&e.bpT===r.time));
-  S.bpR=S.bpR.filter(r=>r.id!==bpEditId);
-  save();closeM('BPEditM');renderBP();renderHome();renderCal();
-}
-function openBPAdd(dateKey){
-  bpAddDate=dateKey;
-  const p=dateKey.split('-');
-  document.getElementById('bpAddT').textContent='血圧を入力';
-  document.getElementById('bpAddDateLbl').textContent=p[1]+'/'+p[2]+'の血圧を入力';
-  ['bpAS','bpAD','bpAP','bpAN'].forEach(id=>document.getElementById(id).value='');
-  openM('BPAddM');
-}
-function saveBPAdd(){
-  if(!bpAddDate)return;
-  const sys=parseInt(document.getElementById('bpAS').value),dia=parseInt(document.getElementById('bpAD').value);
-  if(!sys||!dia){alert('収縮期・拡張期を入力してください');return;}
-  const pulse=document.getElementById('bpAP').value?parseInt(document.getElementById('bpAP').value):null;
-  const time=document.getElementById('bpAT').value,note=document.getElementById('bpAN').value.trim();
-  S.bpR.push({id:Date.now(),date:bpAddDate,time,sys,dia,pulse,note});
-  if(!S.evts[bpAddDate])S.evts[bpAddDate]=[];
-  S.evts[bpAddDate]=S.evts[bpAddDate].filter(e=>e.bpT!==time);
-  S.evts[bpAddDate].push({type:'bp',title:`血圧 ${sys}/${dia}（${time}）`,time:'',bpT:time});
-  save();closeM('BPAddM');renderBP();renderHome();renderCal();
-}
-
-// Med type for add form
-let currentMedType='regular', editMedType='regular', editMedId=null, editMedTags=[];
-
-function setMedType(type){
-  currentMedType=type;
-  document.getElementById('mTyp-regular').classList.toggle('on',type==='regular');
-  document.getElementById('mTyp-prn').classList.toggle('on',type==='prn');
-  document.getElementById('mTimingWrap').style.display=type==='regular'?'block':'none';
-}
-function setEditMedType(type){
-  editMedType=type;
-  document.getElementById('eMTyp-regular').classList.toggle('on',type==='regular');
-  document.getElementById('eMTyp-prn').classList.toggle('on',type==='prn');
-  document.getElementById('eMTimingWrap').style.display=type==='regular'?'block':'none';
-}
-function togEditTag(t){
-  const el=document.getElementById('et-'+t);
-  const i=editMedTags.indexOf(t);
-  if(i>=0){editMedTags.splice(i,1);el.classList.remove('on');}
-  else{editMedTags.push(t);el.classList.add('on');}
-}
-function openEditMed(id){
-  editMedId=id;
-  const m=S.meds.find(m=>m.id===id);if(!m)return;
-  document.getElementById('eMNm').value=m.name;
-  document.getElementById('eMDs').value=m.dose||'';
-  document.getElementById('eMNt').value=m.note||'';
-  editMedType=m.prn?'prn':'regular';
-  editMedTags=[...(m.times||[])];
-  setEditMedType(editMedType);
-  ['朝','昼','夕','就寝前'].forEach(t=>{
-    const el=document.getElementById('et-'+t);
-    if(el)el.classList.toggle('on',editMedTags.includes(t));
-  });
-  openM('MedEditM');
-}
-function saveEditMed(){
-  if(!editMedId)return;
-  const idx=S.meds.findIndex(m=>m.id===editMedId);if(idx<0)return;
-  const name=document.getElementById('eMNm').value.trim();if(!name)return;
-  S.meds[idx]={...S.meds[idx],name,dose:document.getElementById('eMDs').value.trim(),note:document.getElementById('eMNt').value.trim(),prn:editMedType==='prn',times:editMedType==='regular'?[...editMedTags]:[]};
-  save();closeM('MedEditM');renderHome();
-}
-function delMed(){
-  if(!editMedId)return;
-  if(!confirm('この薬を削除しますか？'))return;
-  S.meds=S.meds.filter(m=>m.id!==editMedId);
-  save();closeM('MedEditM');renderHome();
-}
-
-// PRN recording
-let currentPRNId=null;
-function openPRNRecord(id){
-  currentPRNId=id;
-  const m=S.meds.find(m=>m.id===id);if(!m)return;
-  document.getElementById('prnMT').textContent=m.name+'を記録';
-  document.getElementById('prnMSub').textContent=m.dose||'飲んだ時間を記録します';
-  const now=new Date();
-  document.getElementById('prnTime').value=now.getHours()+':'+now.getMinutes().toString().padStart(2,'0');
-  document.getElementById('prnNote').value='';
-  openM('PRNM');
-}
-function savePRN(){
-  if(!currentPRNId)return;
-  const m=S.meds.find(m=>m.id===currentPRNId);if(!m)return;
-  const time=document.getElementById('prnTime').value;
-  const note=document.getElementById('prnNote').value.trim();
-  const today=dk(new Date());
-  if(!S.evts[today])S.evts[today]=[];
-  S.evts[today].push({type:'med',title:m.name+'（頓服）'+(note?' - '+note:''),time});
-  // Also add to checks for today tracking
-  S.chk[today+'_prn_'+currentPRNId+'_'+time]=true;
-  save();closeM('PRNM');renderHome();renderCal();
-}
-
-// Auto-backup restore
-function renderBackups(){
-  const el=document.getElementById('bkList');
-  if(!el)return;
-  let bks=[];
-  try{bks=JSON.parse(localStorage.getItem(SK+'_bks')||'[]');}catch(e){bks=[];}
-  if(bks.length===0){el.innerHTML='<div style="color:var(--text2);font-size:13px">まだバックアップがありません</div>';return;}
-  el.innerHTML=[...bks].reverse().map(bk=>{
-    const d=bk.data;
-    const cnt=(d.bpR?d.bpR.length:0)+'件の血圧・'+(d.meds?d.meds.length:0)+'種の薬・'+(d.skins?d.skins.length:0)+'枚の写真';
-    return`<div class="ei"><div class="edot" style="background:var(--green)"></div><div class="elbl"><div style="font-size:13px;font-weight:500">${bk.date}</div><div style="font-size:11px;color:var(--text2)">${cnt}</div></div><button class="btn bsm bp" onclick="restoreBackup('${bk.date}')">復元</button></div>`;
-  }).join('');
-}
-function restoreBackup(date){
-  if(!confirm(date+'のバックアップを復元しますか？\n現在のデータは上書きされます。'))return;
-  let bks=[];
-  try{bks=JSON.parse(localStorage.getItem(SK+'_bks')||'[]');}catch(e){return;}
-  const bk=bks.find(b=>b.date===date);
-  if(!bk){alert('バックアップが見つかりません');return;}
-  const d=bk.data;
-  const curPw=S.pw,curAl=S.al;
-  if(d.meds)S.meds=d.meds;if(d.chk)S.chk=d.chk;if(d.evts)S.evts=d.evts;
-  if(d.recs)S.recs=d.recs;if(d.bpR)S.bpR=d.bpR;if(d.labR)S.labR=d.labR;
-  if(d.diar)S.diar=d.diar;if('dxDate' in d)S.dxDate=d.dxDate;if(d.skins)S.skins=d.skins;
-  S.pw=curPw;S.al=curAl;
-  save();init();renderBackups();
-  alert('復元が完了しました！');
-}
-
-load();}
+function clrData(){localStorage.removeItem(SK);localStorage.removeItem(SK+'_s');location.reload();}
 
 function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return h.toString(36);}
 function toggleEye(i,c){const e=document.getElementById(i);const ic=document.getElementById(c);e.type=e.type==='password'?'text':'password';ic.className='ti ti-eye'+(e.type==='text'?'-off':'');}
@@ -934,7 +775,7 @@ function init(){renderHome();renderCal();renderBP();renderLabRecs();renderDX();r
 function renderDX(){if(!S.dxDate){document.getElementById('DXD').textContent='未設定';document.getElementById('DXS').textContent='';return;}const d=new Date(S.dxDate+'T12:00:00');document.getElementById('DXD').textContent=d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日（'+DY[d.getDay()]+'）';const diff=Math.ceil((d-new Date())/(86400000));if(diff>0)document.getElementById('DXS').textContent='あと'+diff+'日';else if(diff===0)document.getElementById('DXS').textContent='今日です！';else document.getElementById('DXS').textContent=Math.abs(diff)+'日前';}
 function saveDX(){const v=document.getElementById('dxIn').value;if(!v)return;S.dxDate=v;save();closeM('DXM');renderDX();renderHome();}
 
-function renderHome(){const today=dk(new Date());let rows='',done=0,total=0;['朝','昼','夕','就寝前'].forEach(t=>{S.meds.forEach(m=>{if(!m.times.includes(t))return;const k=today+'_'+m.id+'_'+t,chk=S.chk[k];if(chk)done++;total++;rows+=`<div class="mr"><div class="cc${chk?' on':''}" onclick="togChk(${m.id},'${t}')">${chk?'<i class="ti ti-check" style="font-size:13px"></i>':''}</div><div class="mi"><div class="mn">${m.name}</div><div class="ms">${m.dose||''} ${m.note||''}</div></div><span class="badge ${chk?'bg':'ba'}">${t}</span></div>`;});});document.getElementById('MHL').innerHTML=rows||'<div style="color:var(--text2);font-size:13px;padding:8px 0">薬が登録されていません</div>';document.getElementById('stD').textContent=done;document.getElementById('stT').textContent=total;document.getElementById('stB').style.width=total>0?Math.round(done/total*100)+'%':'0%';const tb=S.bpR.filter(r=>r.date===today);if(tb.length>0){const l=tb[tb.length-1];const c=bpCat(l.sys,l.dia);document.getElementById('bpH').innerHTML=`<span style="font-size:15px;font-weight:700;color:${c.color}">${l.sys}/${l.dia}</span><span class="badge" style="background:${c.bg};color:${c.color};display:inline-flex;margin-left:4px;font-size:10px">${c.label}</span>`;}else document.getElementById('bpH').innerHTML='<span style="color:var(--text2);font-size:12px">未記録</span>';const fv=[];Object.entries(S.evts).forEach(([d,ev])=>{if(d>today)ev.filter(e=>e.type==='visit').forEach(e=>fv.push({d,e}));});fv.sort((a,b)=>a.d.localeCompare(b.d));if(fv.length>0){const f=fv[0];const d2=new Date(f.d+'T12:00:00');document.getElementById('NV').innerHTML=`<div class="ei"><div class="edot" style="background:var(--blue)"></div><div class="elbl">${f.e.title}</div><div style="font-size:11px;color:var(--text2)">${d2.getMonth()+1}/${d2.getDate()}</div></div>`;}else document.getElementById('NV').innerHTML='<div style="color:var(--text2);font-size:13px">通院予定なし</div>';try{
+function renderHome(){const today=dk(new Date());let rows='',done=0,total=0;['朝','朝食後','昼','昼食後','夕','夕食後','就寝前'].forEach(t=>{S.meds.forEach(m=>{if(!m.times.includes(t))return;const k=today+'_'+m.id+'_'+t,chk=S.chk[k];if(chk)done++;total++;rows+=`<div class="mr"><div class="cc${chk?' on':''}" onclick="togChk(${m.id},'${t}')">${chk?'<i class="ti ti-check" style="font-size:13px"></i>':''}</div><div class="mi"><div class="mn">${m.name}</div><div class="ms">${m.dose||''} ${m.note||''}</div></div><span class="badge ${chk?'bg':'ba'}">${t}</span></div>`;});});document.getElementById('MHL').innerHTML=rows||'<div style="color:var(--text2);font-size:13px;padding:8px 0">薬が登録されていません</div>';document.getElementById('stD').textContent=done;document.getElementById('stT').textContent=total;document.getElementById('stB').style.width=total>0?Math.round(done/total*100)+'%':'0%';const tb=S.bpR.filter(r=>r.date===today);if(tb.length>0){const l=tb[tb.length-1];const c=bpCat(l.sys,l.dia);document.getElementById('bpH').innerHTML=`<span style="font-size:15px;font-weight:700;color:${c.color}">${l.sys}/${l.dia}</span><span class="badge" style="background:${c.bg};color:${c.color};display:inline-flex;margin-left:4px;font-size:10px">${c.label}</span>`;}else document.getElementById('bpH').innerHTML='<span style="color:var(--text2);font-size:12px">未記録</span>';const fv=[];Object.entries(S.evts).forEach(([d,ev])=>{if(d>today)ev.filter(e=>e.type==='visit').forEach(e=>fv.push({d,e}));});fv.sort((a,b)=>a.d.localeCompare(b.d));if(fv.length>0){const f=fv[0];const d2=new Date(f.d+'T12:00:00');document.getElementById('NV').innerHTML=`<div class="ei"><div class="edot" style="background:var(--blue)"></div><div class="elbl">${f.e.title}</div><div style="font-size:11px;color:var(--text2)">${d2.getMonth()+1}/${d2.getDate()}</div></div>`;}else document.getElementById('NV').innerHTML='<div style="color:var(--text2);font-size:13px">通院予定なし</div>';try{
   if(fv.length>0){
     const f=fv[0];const d2=new Date(f.d+'T12:00:00');
     const diff=Math.ceil((d2-new Date())/86400000);
@@ -945,13 +786,57 @@ function renderHome(){const today=dk(new Date());let rows='',done=0,total=0;['�
     document.getElementById('NVS').textContent='通院予定なし';
     document.getElementById('NVDays').textContent='';
   }
-}catch(e){}renderDX();}
+}catch(e){}
+
+  // ===== Auto-detect Dupixent from calendar =====
+  const dxEvents=[];
+  Object.entries(S.evts).forEach(([d,ev])=>{
+    if(d>=today)ev.forEach(e=>{if(e.title&&(e.title.includes('デュピクセント')||e.title.toLowerCase().includes('dupixent')))dxEvents.push({d,e});});
+  });
+  dxEvents.sort((a,b)=>a.d.localeCompare(b.d));
+  if(dxEvents.length>0&&!S.dxDate){
+    // Auto-show from calendar
+    const dx=dxEvents[0];const dxd=new Date(dx.d+'T12:00:00');
+    const diff=Math.ceil((dxd-new Date())/86400000);
+    const diffTxt=diff===0?'今日！':diff===1?'明日':diff+'日後';
+    try{
+      document.getElementById('DXD').textContent=dxd.getFullYear()+'年'+(dxd.getMonth()+1)+'月'+dxd.getDate()+'日';
+      document.getElementById('DXS').textContent=diffTxt;
+    }catch(e){}
+  }
+
+  // ===== PRN (頓服) list =====
+  const prnMeds=S.meds.filter(m=>m.type==='prn'||m.prn);
+  const prnEl=document.getElementById('PRNL');
+  if(prnEl){
+    prnEl.innerHTML=prnMeds.length>0?prnMeds.map(m=>`
+      <div class="mr">
+        <div class="mi"><div class="mn">${m.name}</div><div class="ms">${m.dose||''} ${m.note||''}</div></div>
+        <button onclick="openPRNRecord(${m.id})" style="background:var(--amber-light);border:.5px solid var(--amber);border-radius:8px;color:var(--amber-text);cursor:pointer;padding:6px 10px;font-size:12px;font-family:inherit;white-space:nowrap"><i class="ti ti-pill"></i> 服用記録</button>
+        <button class="ebt" onclick="openEditMed(${m.id})" style="margin-left:4px"><i class="ti ti-edit" style="color:var(--green-dark)"></i></button>
+      </div>`).join(''):'<div style="color:var(--text2);font-size:13px;padding:8px 0">頓服薬が登録されていません</div>';
+  }
+
+  // ===== Medication list (regular + caution) with edit =====
+  const listMeds=S.meds.filter(m=>!(m.type==='prn'||m.prn));
+  const medEl=document.getElementById('MEDRL');
+  if(medEl){
+    medEl.innerHTML=listMeds.length>0?listMeds.map(m=>{
+      const isCaution=m.type==='caution';
+      return`<div class="mr">
+        <div class="mi"><div class="mn">${m.name}${isCaution?' <span class="badge br" style="font-size:9px">💉注射薬</span>':''}</div><div class="ms">${m.times&&m.times.length>0?m.times.join('・'):''} ${m.dose||''} ${m.note||''}</div></div>
+        <button class="ebt" onclick="openEditMed(${m.id})"><i class="ti ti-edit" style="color:var(--green-dark)"></i></button>
+      </div>`;
+    }).join(''):'<div style="color:var(--text2);font-size:13px;padding:8px 0">薬が登録されていません</div>';
+  }
+
+  renderDX();}
 function togChk(mid,t){const k=dk(new Date())+'_'+mid+'_'+t;S.chk[k]=!S.chk[k];save();renderHome();}
 function addMed(){
   const name=document.getElementById('mNm').value.trim();if(!name)return;
-  S.meds.push({id:Date.now(),name,dose:document.getElementById('mDs').value.trim(),times:currentMedType==='regular'?[...S.sTags]:[],note:document.getElementById('mNt').value.trim(),prn:currentMedType==='prn'});
+  S.meds.push({id:Date.now(),name,dose:document.getElementById('mDs').value.trim(),times:currentMedType==='prn'?[]:[...S.sTags],note:document.getElementById('mNt').value.trim(),type:currentMedType,prn:currentMedType==='prn'});
   S.sTags=[];
-  document.querySelectorAll('.tag').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('#MM .tag').forEach(t=>{if(t.id.startsWith('t-'))t.classList.remove('on');});
   ['mNm','mDs','mNt'].forEach(id=>document.getElementById(id).value='');
   currentMedType='regular';setMedType('regular');
   save();closeM('MM');renderHome();
@@ -1251,13 +1136,16 @@ function setMedType(type){
   currentMedType=type;
   document.getElementById('mTyp-regular').classList.toggle('on',type==='regular');
   document.getElementById('mTyp-prn').classList.toggle('on',type==='prn');
-  document.getElementById('mTimingWrap').style.display=type==='regular'?'block':'none';
+  document.getElementById('mTyp-caution').classList.toggle('on',type==='caution');
+  // Caution and regular both show timing, prn hides it
+  document.getElementById('mTimingWrap').style.display=type==='prn'?'none':'block';
 }
 function setEditMedType(type){
   editMedType=type;
   document.getElementById('eMTyp-regular').classList.toggle('on',type==='regular');
   document.getElementById('eMTyp-prn').classList.toggle('on',type==='prn');
-  document.getElementById('eMTimingWrap').style.display=type==='regular'?'block':'none';
+  document.getElementById('eMTyp-caution').classList.toggle('on',type==='caution');
+  document.getElementById('eMTimingWrap').style.display=type==='prn'?'none':'block';
 }
 function togEditTag(t){
   const el=document.getElementById('et-'+t);
@@ -1271,10 +1159,10 @@ function openEditMed(id){
   document.getElementById('eMNm').value=m.name;
   document.getElementById('eMDs').value=m.dose||'';
   document.getElementById('eMNt').value=m.note||'';
-  editMedType=m.prn?'prn':'regular';
+  editMedType=m.type||(m.prn?'prn':'regular');
   editMedTags=[...(m.times||[])];
   setEditMedType(editMedType);
-  ['朝','昼','夕','就寝前'].forEach(t=>{
+  ['朝','朝食後','昼','昼食後','夕','夕食後','就寝前'].forEach(t=>{
     const el=document.getElementById('et-'+t);
     if(el)el.classList.toggle('on',editMedTags.includes(t));
   });
@@ -1284,7 +1172,7 @@ function saveEditMed(){
   if(!editMedId)return;
   const idx=S.meds.findIndex(m=>m.id===editMedId);if(idx<0)return;
   const name=document.getElementById('eMNm').value.trim();if(!name)return;
-  S.meds[idx]={...S.meds[idx],name,dose:document.getElementById('eMDs').value.trim(),note:document.getElementById('eMNt').value.trim(),prn:editMedType==='prn',times:editMedType==='regular'?[...editMedTags]:[]};
+  S.meds[idx]={...S.meds[idx],name,dose:document.getElementById('eMDs').value.trim(),note:document.getElementById('eMNt').value.trim(),type:editMedType,prn:editMedType==='prn',times:editMedType==='prn'?[]:[...editMedTags]};
   save();closeM('MedEditM');renderHome();
 }
 function delMed(){
