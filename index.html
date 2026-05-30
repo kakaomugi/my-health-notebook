@@ -474,6 +474,14 @@ window.onload = function(){
         <input type="file" id="impFile" accept=".json" style="display:none" onchange="impData(this)">
         <button class="btn bd" onclick="if(confirm('全データを削除しますか？'))clrData()"><i class="ti ti-trash"></i> 全データを削除</button>
       </div>
+      <div class="card">
+        <div class="ct" style="margin-bottom:10px"><i class="ti ti-history" style="color:var(--green)"></i> 自動バックアップ</div>
+        <div class="ib ig" style="margin-bottom:10px">
+          <i class="ti ti-shield-check"></i>
+          <div>毎日自動で最大7日分のバックアップを保存しています。データが消えた場合はここから復元できます。</div>
+        </div>
+        <div id="bkList"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -649,7 +657,33 @@ const DY=['日','月','火','水','木','金','土'];
 let S={pw:null,al:false,att:0,lu:null,meds:[],chk:{},evts:{},recs:[],skins:[],bpR:[],labR:[],diar:{},dxDate:null,selD:new Date(),curM:new Date(),rPhoto:null,sTags:[],lImg:null,lMasks:[],lCM:[],lParsed:null};
 let lkTmr=null,lDrw=false,lbs=34,lCtx=null,lCv=null,eEK=null,eEI=null;
 
-function save(){try{const d={pw:S.pw,al:S.al,meds:S.meds,chk:S.chk,evts:S.evts,recs:S.recs,bpR:S.bpR,labR:S.labR,diar:S.diar,dxDate:S.dxDate};localStorage.setItem(SK,JSON.stringify(d));localStorage.setItem(SK+'_s',JSON.stringify(S.skins));}catch(e){}}
+function save(){
+  try{
+    const d={pw:S.pw,al:S.al,meds:S.meds,chk:S.chk,evts:S.evts,recs:S.recs,bpR:S.bpR,labR:S.labR,diar:S.diar,dxDate:S.dxDate};
+    localStorage.setItem(SK,JSON.stringify(d));
+    localStorage.setItem(SK+'_s',JSON.stringify(S.skins));
+    // Auto-backup: keep a daily snapshot
+    autoBackup();
+  }catch(e){}
+}
+function autoBackup(){
+  try{
+    const today=dk(new Date());
+    const lastBk=localStorage.getItem(SK+'_lastbk');
+    // Create one backup per day
+    if(lastBk!==today){
+      const full={pw:S.pw,al:S.al,meds:S.meds,chk:S.chk,evts:S.evts,recs:S.recs,bpR:S.bpR,labR:S.labR,diar:S.diar,dxDate:S.dxDate,skins:S.skins,backupDate:new Date().toISOString()};
+      // Keep last 7 daily backups
+      let bks=[];
+      try{bks=JSON.parse(localStorage.getItem(SK+'_bks')||'[]');}catch(e){bks=[];}
+      bks.push({date:today,data:full});
+      // Keep only last 7
+      if(bks.length>7)bks=bks.slice(-7);
+      localStorage.setItem(SK+'_bks',JSON.stringify(bks));
+      localStorage.setItem(SK+'_lastbk',today);
+    }
+  }catch(e){console.warn('Auto-backup failed (storage may be full)',e);}
+}
 function load(){try{const d=localStorage.getItem(SK);if(d){const p=JSON.parse(d);Object.assign(S,p);}const sk=localStorage.getItem(SK+'_s');if(sk)S.skins=JSON.parse(sk);S.selD=new Date();S.curM=new Date();S.sTags=[];S.lImg=null;S.lMasks=[];S.lCM=[];S.lParsed=null;S.rPhoto=null;S.att=S.att||0;}catch(e){}}
 function expData(){
   // Include all data including skins
@@ -851,6 +885,35 @@ function savePRN(){
   save();closeM('PRNM');renderHome();renderCal();
 }
 
+// Auto-backup restore
+function renderBackups(){
+  const el=document.getElementById('bkList');
+  if(!el)return;
+  let bks=[];
+  try{bks=JSON.parse(localStorage.getItem(SK+'_bks')||'[]');}catch(e){bks=[];}
+  if(bks.length===0){el.innerHTML='<div style="color:var(--text2);font-size:13px">まだバックアップがありません</div>';return;}
+  el.innerHTML=[...bks].reverse().map(bk=>{
+    const d=bk.data;
+    const cnt=(d.bpR?d.bpR.length:0)+'件の血圧・'+(d.meds?d.meds.length:0)+'種の薬・'+(d.skins?d.skins.length:0)+'枚の写真';
+    return`<div class="ei"><div class="edot" style="background:var(--green)"></div><div class="elbl"><div style="font-size:13px;font-weight:500">${bk.date}</div><div style="font-size:11px;color:var(--text2)">${cnt}</div></div><button class="btn bsm bp" onclick="restoreBackup('${bk.date}')">復元</button></div>`;
+  }).join('');
+}
+function restoreBackup(date){
+  if(!confirm(date+'のバックアップを復元しますか？\n現在のデータは上書きされます。'))return;
+  let bks=[];
+  try{bks=JSON.parse(localStorage.getItem(SK+'_bks')||'[]');}catch(e){return;}
+  const bk=bks.find(b=>b.date===date);
+  if(!bk){alert('バックアップが見つかりません');return;}
+  const d=bk.data;
+  const curPw=S.pw,curAl=S.al;
+  if(d.meds)S.meds=d.meds;if(d.chk)S.chk=d.chk;if(d.evts)S.evts=d.evts;
+  if(d.recs)S.recs=d.recs;if(d.bpR)S.bpR=d.bpR;if(d.labR)S.labR=d.labR;
+  if(d.diar)S.diar=d.diar;if('dxDate' in d)S.dxDate=d.dxDate;if(d.skins)S.skins=d.skins;
+  S.pw=curPw;S.al=curAl;
+  save();init();renderBackups();
+  alert('復元が完了しました！');
+}
+
 load();}
 
 function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return h.toString(36);}
@@ -866,7 +929,7 @@ function showScr(id,btn){document.querySelectorAll('.scr').forEach(s=>s.classLis
 function openM(id){document.getElementById(id).classList.add('on');}
 function closeM(id){document.getElementById(id).classList.remove('on');}
 function togTag(t){const el=document.getElementById('t-'+t);const i=S.sTags.indexOf(t);if(i>=0){S.sTags.splice(i,1);el.classList.remove('on');}else{S.sTags.push(t);el.classList.add('on');}}
-function init(){renderHome();renderCal();renderBP();renderLabRecs();renderDX();}
+function init(){renderHome();renderCal();renderBP();renderLabRecs();renderDX();renderBackups();}
 
 function renderDX(){if(!S.dxDate){document.getElementById('DXD').textContent='未設定';document.getElementById('DXS').textContent='';return;}const d=new Date(S.dxDate+'T12:00:00');document.getElementById('DXD').textContent=d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日（'+DY[d.getDay()]+'）';const diff=Math.ceil((d-new Date())/(86400000));if(diff>0)document.getElementById('DXS').textContent='あと'+diff+'日';else if(diff===0)document.getElementById('DXS').textContent='今日です！';else document.getElementById('DXS').textContent=Math.abs(diff)+'日前';}
 function saveDX(){const v=document.getElementById('dxIn').value;if(!v)return;S.dxDate=v;save();closeM('DXM');renderDX();renderHome();}
@@ -1254,6 +1317,35 @@ function savePRN(){
   // Also add to checks for today tracking
   S.chk[today+'_prn_'+currentPRNId+'_'+time]=true;
   save();closeM('PRNM');renderHome();renderCal();
+}
+
+// Auto-backup restore
+function renderBackups(){
+  const el=document.getElementById('bkList');
+  if(!el)return;
+  let bks=[];
+  try{bks=JSON.parse(localStorage.getItem(SK+'_bks')||'[]');}catch(e){bks=[];}
+  if(bks.length===0){el.innerHTML='<div style="color:var(--text2);font-size:13px">まだバックアップがありません</div>';return;}
+  el.innerHTML=[...bks].reverse().map(bk=>{
+    const d=bk.data;
+    const cnt=(d.bpR?d.bpR.length:0)+'件の血圧・'+(d.meds?d.meds.length:0)+'種の薬・'+(d.skins?d.skins.length:0)+'枚の写真';
+    return`<div class="ei"><div class="edot" style="background:var(--green)"></div><div class="elbl"><div style="font-size:13px;font-weight:500">${bk.date}</div><div style="font-size:11px;color:var(--text2)">${cnt}</div></div><button class="btn bsm bp" onclick="restoreBackup('${bk.date}')">復元</button></div>`;
+  }).join('');
+}
+function restoreBackup(date){
+  if(!confirm(date+'のバックアップを復元しますか？\n現在のデータは上書きされます。'))return;
+  let bks=[];
+  try{bks=JSON.parse(localStorage.getItem(SK+'_bks')||'[]');}catch(e){return;}
+  const bk=bks.find(b=>b.date===date);
+  if(!bk){alert('バックアップが見つかりません');return;}
+  const d=bk.data;
+  const curPw=S.pw,curAl=S.al;
+  if(d.meds)S.meds=d.meds;if(d.chk)S.chk=d.chk;if(d.evts)S.evts=d.evts;
+  if(d.recs)S.recs=d.recs;if(d.bpR)S.bpR=d.bpR;if(d.labR)S.labR=d.labR;
+  if(d.diar)S.diar=d.diar;if('dxDate' in d)S.dxDate=d.dxDate;if(d.skins)S.skins=d.skins;
+  S.pw=curPw;S.al=curAl;
+  save();init();renderBackups();
+  alert('復元が完了しました！');
 }
 
 load();
